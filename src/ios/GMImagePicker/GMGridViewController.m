@@ -489,10 +489,13 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
             fetch_item.be_finished = true;
             
             //asset.image_fullsize = result;
+            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+            NSString *libPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"NoCloud"];
             
             NSString * filePath;
             do {
-                filePath = [NSString stringWithFormat:@"%@/%@%03d.%@", docsPath, CDV_PHOTO_PREFIX, docCount++, @"jpg"];
+                
+                filePath = [NSString stringWithFormat:@"%@/%@.%@", libPath, [[NSUUID UUID] UUIDString], @"jpg"];
             } while ([fileMgr fileExistsAtPath:filePath]);
             
             fetch_item.be_saving_img = true;
