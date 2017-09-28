@@ -167,10 +167,10 @@ typedef enum : NSUInteger {
     NSMutableArray * result_all = [[NSMutableArray alloc] init];
     CGSize targetSize = CGSizeMake(self.width, self.height);
     NSFileManager* fileMgr = [[NSFileManager alloc] init];
-    NSString* docsPath = [NSTemporaryDirectory()stringByStandardizingPath];
-
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+    NSString *libPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"NoCloud"];
+  
     NSError* err = nil;
-    int i = 1;
     NSString* filePath;
     CDVPluginResult* result = nil;
 
@@ -181,7 +181,7 @@ typedef enum : NSUInteger {
         }
 
         do {
-            filePath = [NSString stringWithFormat:@"%@/%@%03d.%@", docsPath, CDV_PHOTO_PREFIX, i++, @"jpg"];
+            filePath = [NSString stringWithFormat:@"%@/%@.%@", libPath, [[NSUUID UUID] UUIDString], @"jpg"];
         } while ([fileMgr fileExistsAtPath:filePath]);
 
         NSData* data = nil;
