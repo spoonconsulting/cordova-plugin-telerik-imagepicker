@@ -30,6 +30,7 @@
 
 package com.synconset;
 
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -58,6 +59,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -250,11 +252,17 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
             case CURSORLOADER_THUMBS:
                 img.add(MediaStore.Images.Media._ID);
                 img.add(MediaStore.Images.Media.ORIENTATION);
+                img.add(MediaStore.Images.Media.LATITUDE);
+                img.add(MediaStore.Images.Media.LONGITUDE);
+                img.add(MediaStore.Images.Media.DATA);
                 break;
 
             case CURSORLOADER_REAL:
                 img.add(MediaStore.Images.Thumbnails.DATA);
                 img.add(MediaStore.Images.Media.ORIENTATION);
+                img.add(MediaStore.Images.Media.LATITUDE);
+                img.add(MediaStore.Images.Media.LONGITUDE);
+                img.add(MediaStore.Images.Media.DATA);
                 break;
         }
 
@@ -321,6 +329,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
         } else {
 	        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR); //prevent orientation changes during processing
             new ResizeImagesTask().execute(fileNames.entrySet());
+
         }
     }
 
@@ -518,6 +527,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                 while (i.hasNext()) {
                     Entry<String, Integer> imageInfo = i.next();
                     File file = new File(imageInfo.getKey());
+                    File originalFile = new File(imageInfo.getKey());
                     int rotate = imageInfo.getValue();
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inSampleSize = 1;
@@ -526,6 +536,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                     int width = options.outWidth;
                     int height = options.outHeight;
                     float scale = calculateScale(width, height);
+
 
                     if (scale < 1) {
                         int finalWidth = (int)(width * scale);
@@ -568,6 +579,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
 
                     if (outputType == OutputType.FILE_URI) {
                         file = storeImage(bmp, file.getName());
+                        copyExifData(originalFile.getAbsolutePath(),file.getAbsolutePath());
                         al.add(Uri.fromFile(file).toString());
 
                     } else if (outputType == OutputType.BASE64_STRING) {
@@ -672,6 +684,68 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
             outStream.flush();
             outStream.close();
             return file;
+        }
+
+        public void copyExifData(String file1, String file2){
+            try {
+                ExifInterface file1Exif = new ExifInterface(file1);
+                ExifInterface file2Exif = new ExifInterface(file2);
+
+                String aperture = file1Exif.getAttribute(ExifInterface.TAG_APERTURE);
+                String dateTime = file1Exif.getAttribute(ExifInterface.TAG_DATETIME);
+                String exposureTime = file1Exif.getAttribute(ExifInterface.TAG_EXPOSURE_TIME);
+                String flash = file1Exif.getAttribute(ExifInterface.TAG_FLASH);
+                String focalLength = file1Exif.getAttribute(ExifInterface.TAG_FOCAL_LENGTH);
+                String gpsAltitude = file1Exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE);
+                String gpsAltitudeRef = file1Exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF);
+                String gpsDateStamp = file1Exif.getAttribute(ExifInterface.TAG_GPS_DATESTAMP);
+                String gpsLatitude = file1Exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+                String gpsLatitudeRef = file1Exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF);
+                String gpsLongitude = file1Exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+                String gpsLongitudeRef = file1Exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
+                String gpsProcessingMethod = file1Exif.getAttribute(ExifInterface.TAG_GPS_PROCESSING_METHOD);
+                String gpsTimestamp = file1Exif.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP);
+                Integer imageLength = file1Exif.getAttributeInt(ExifInterface.TAG_IMAGE_LENGTH, 0);
+                Integer imageWidth = file1Exif.getAttributeInt(ExifInterface.TAG_IMAGE_WIDTH, 0);
+                String iso = file1Exif.getAttribute(ExifInterface.TAG_ISO);
+                String make = file1Exif.getAttribute(ExifInterface.TAG_MAKE);
+                String model = file1Exif.getAttribute(ExifInterface.TAG_MODEL);
+                Integer orientation = file1Exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                Integer whiteBalance = file1Exif.getAttributeInt(ExifInterface.TAG_WHITE_BALANCE, 0);
+
+
+                file2Exif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation.toString());
+                file2Exif.setAttribute(ExifInterface.TAG_APERTURE, aperture);
+                file2Exif.setAttribute(ExifInterface.TAG_DATETIME, dateTime);
+                file2Exif.setAttribute(ExifInterface.TAG_EXPOSURE_TIME, exposureTime);
+                file2Exif.setAttribute(ExifInterface.TAG_FLASH, flash);
+                file2Exif.setAttribute(ExifInterface.TAG_FOCAL_LENGTH, focalLength);
+                file2Exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, gpsAltitude);
+                file2Exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF, gpsAltitudeRef);
+                file2Exif.setAttribute(ExifInterface.TAG_GPS_DATESTAMP, gpsDateStamp);
+                file2Exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, gpsLatitude);
+                file2Exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, gpsLatitudeRef);
+                file2Exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, gpsLongitude);
+                file2Exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, gpsLongitudeRef);
+                file2Exif.setAttribute(ExifInterface.TAG_GPS_PROCESSING_METHOD, gpsProcessingMethod);
+                file2Exif.setAttribute(ExifInterface.TAG_GPS_TIMESTAMP, gpsTimestamp);
+                file2Exif.setAttribute(ExifInterface.TAG_IMAGE_LENGTH, imageLength.toString());
+                file2Exif.setAttribute(ExifInterface.TAG_IMAGE_WIDTH, imageWidth.toString());
+                file2Exif.setAttribute(ExifInterface.TAG_ISO, iso);
+                file2Exif.setAttribute(ExifInterface.TAG_MAKE, make);
+                file2Exif.setAttribute(ExifInterface.TAG_MODEL, model);
+                file2Exif.setAttribute(ExifInterface.TAG_WHITE_BALANCE, whiteBalance.toString());
+                file2Exif.saveAttributes();
+            }
+            catch (FileNotFoundException io) {
+                io.printStackTrace();
+            }
+            catch (IOException io) {
+                io.printStackTrace();
+            }
+            catch (NullPointerException np){
+                np.printStackTrace();
+            }
         }
 
         private Bitmap getResizedBitmap(Bitmap bm, float factor) {
