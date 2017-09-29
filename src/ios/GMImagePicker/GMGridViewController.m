@@ -472,9 +472,14 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
             
         }];
         
-        
-            
-        [ self.imageManager requestImageForAsset:asset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeDefault options:ph_options resultHandler:^(UIImage *result, NSDictionary *info) {
+        [[PHImageManager defaultManager] requestImageDataForAsset:asset
+                                                          options:ph_options
+                                                    resultHandler:
+         ^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info) {
+             //CIImage* ciImage = [CIImage imageWithData:imageData];
+             //NSLog(@"Metadata : %@", ciImage.properties);
+             
+       // [ self.imageManager requestImageForAsset:asset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeDefault options:ph_options resultHandler:^(UIImage *result, NSDictionary *info) {
             
             //dispatch_async(dispatch_get_main_queue(), ^{
             
@@ -502,13 +507,14 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
             
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                 
+                [imageData writeToFile:filePath atomically:YES];
                 
                 // @BVL: Added orientation-fix to correctly display the returned result
                 
 //              if ( ![ UIImageJPEGRepresentation(result, 1.0f ) writeToFile:filePath atomically:YES ] ) {
 //                  return;
 //              }
-                
+                /*
                 NSLog(@"original orientation: %ld",(UIImageOrientation)result.imageOrientation);
                 
                 UIImage *imageToDisplay = result.fixOrientation; //  UIImage+fixOrientation extension
@@ -527,7 +533,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
                         return;
                     }
                 }
-                
+                */
                 
                 fetch_item.image_fullsize = filePath;
                 fetch_item.be_saving_img = false;
