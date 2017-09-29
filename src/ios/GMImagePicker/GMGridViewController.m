@@ -514,11 +514,20 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
                 UIImage *imageToDisplay = result.fixOrientation; //  UIImage+fixOrientation extension
                 
                 NSLog(@"corrected orientation: %ld",(UIImageOrientation)imageToDisplay.imageOrientation);
-
-                // setting compression to a low value (high compression) impact performance, but not actual img quality
-                if ( ![ UIImageJPEGRepresentation(imageToDisplay, 0.2f ) writeToFile:filePath atomically:YES ] ) {
-                    return;
+                
+                if (info[@"PHImageFileURLKey"]){
+                    NSError* err;
+                    [[NSFileManager defaultManager] copyItemAtPath:info[@"PHImageFileURLKey"] toPath:filePath error:&err];
+                    if (err){
+                        return NSLog(@"%@", err);
+                    }
+                }else{
+                    // setting compression to a low value (high compression) impact performance, but not actual img quality
+                    if ( ![ UIImageJPEGRepresentation(imageToDisplay, 0.2f ) writeToFile:filePath atomically:YES ] ) {
+                        return;
+                    }
                 }
+                
                 
                 fetch_item.image_fullsize = filePath;
                 fetch_item.be_saving_img = false;
