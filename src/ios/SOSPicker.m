@@ -126,7 +126,7 @@ typedef enum : NSUInteger {
         scaledSize = CGSizeMake(floor(width * scaleFactor), floor(height * scaleFactor));
     }
 
-    UIGraphicsBeginImageContext(scaledSize); // this will resize
+    UIGraphicsBeginImageContextWithOptions(scaledSize, YES, 1.0); // this will resize
 
     [sourceImage drawInRect:CGRectMake(0, 0, scaledSize.width, scaledSize.height)];
 
@@ -194,6 +194,12 @@ typedef enum : NSUInteger {
                 if (self.quality == 100) {
                     // no scaling, no downsampling, this is the fastest option
                     [result_all addObject:item.image_fullsize];
+                    //save also the thumbnail
+                    UIImage* scaledImage = [self imageByScalingNotCroppingForSize:[UIImage imageNamed:item.image_fullsize] toSize:CGSizeMake(370, 370)];
+                    NSString*thumbName= [NSString stringWithFormat:@"thumb_%@", [item.image_fullsize lastPathComponent]];
+                    NSString*thumb=[item.image_fullsize stringByReplacingOccurrencesOfString:[item.image_fullsize lastPathComponent] withString:thumbName];
+                    [UIImageJPEGRepresentation(scaledImage, self.quality/100.0f) writeToFile:thumb options:NSAtomicWrite error:&err];
+                   
                 } else {
                     // resample first
                     UIImage* image = [UIImage imageNamed:item.image_fullsize];

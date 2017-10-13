@@ -45,6 +45,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.synconset.FakeR;
+
 import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
@@ -59,6 +60,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -67,6 +69,7 @@ import android.provider.MediaStore;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -220,9 +223,9 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                 ImageView imageView = (ImageView) view;
 
                 if (android.os.Build.VERSION.SDK_INT >= 16) {
-                  imageView.setImageAlpha(128);
+                    imageView.setImageAlpha(128);
                 } else {
-                  imageView.setAlpha(128);
+                    imageView.setAlpha(128);
                 }
 
                 view.setBackgroundColor(selectedColor);
@@ -327,7 +330,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
             progress.dismiss();
             finish();
         } else {
-	        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR); //prevent orientation changes during processing
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR); //prevent orientation changes during processing
             new ResizeImagesTask().execute(fileNames.entrySet());
 
         }
@@ -433,12 +436,12 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
 
 
     /*********************
-    * Nested Classes
-    ********************/
+     * Nested Classes
+     ********************/
     private class SquareImageView extends ImageView {
         public SquareImageView(Context context) {
-			super(context);
-		}
+            super(context);
+        }
 
         @Override
         public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -490,18 +493,18 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
 
             if (isChecked(position)) {
                 if (android.os.Build.VERSION.SDK_INT >= 16) {
-                  imageView.setImageAlpha(128);
+                    imageView.setImageAlpha(128);
                 } else {
-                  imageView.setAlpha(128);
+                    imageView.setAlpha(128);
                 }
 
                 imageView.setBackgroundColor(selectedColor);
 
             } else {
                 if (android.os.Build.VERSION.SDK_INT >= 16) {
-                  imageView.setImageAlpha(255);
+                    imageView.setImageAlpha(255);
                 } else {
-                  imageView.setAlpha(255);
+                    imageView.setAlpha(255);
                 }
                 imageView.setBackgroundColor(Color.TRANSPARENT);
             }
@@ -528,6 +531,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                     Entry<String, Integer> imageInfo = i.next();
                     File file = new File(imageInfo.getKey());
                     File originalFile = new File(imageInfo.getKey());
+
                     int rotate = imageInfo.getValue();
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inSampleSize = 1;
@@ -539,8 +543,8 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
 
 
                     if (scale < 1) {
-                        int finalWidth = (int)(width * scale);
-                        int finalHeight = (int)(height * scale);
+                        int finalWidth = (int) (width * scale);
+                        int finalHeight = (int) (height * scale);
                         int inSampleSize = calculateInSampleSize(options, finalWidth, finalHeight);
                         options = new BitmapFactory.Options();
                         options.inSampleSize = inSampleSize;
@@ -558,13 +562,13 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                     } else {
                         try {
                             bmp = this.tryToGetBitmap(file, null, rotate, false);
-                        } catch(OutOfMemoryError e) {
+                        } catch (OutOfMemoryError e) {
                             options = new BitmapFactory.Options();
                             options.inSampleSize = 2;
 
                             try {
                                 bmp = this.tryToGetBitmap(file, options, rotate, false);
-                            } catch(OutOfMemoryError e2) {
+                            } catch (OutOfMemoryError e2) {
                                 options = new BitmapFactory.Options();
                                 options.inSampleSize = 4;
 
@@ -578,9 +582,12 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                     }
 
                     if (outputType == OutputType.FILE_URI) {
-                        file = storeImage(bmp, file.getName());
-                        copyExifData(originalFile.getAbsolutePath(),file.getAbsolutePath());
+                        int index = file.getName().lastIndexOf('.');
+                        String ext = file.getName().substring(index);
+                        file = storeImage(bmp, System.currentTimeMillis() + ext);
+                        copyExifData(originalFile.getAbsolutePath(), file.getAbsolutePath());
                         al.add(Uri.fromFile(file).toString());
+                        saveThumbnail(bmp, file.getName());
 
                     } else if (outputType == OutputType.BASE64_STRING) {
                         al.add(getBase64OfImage(bmp));
@@ -588,6 +595,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                 }
                 return al;
             } catch (IOException e) {
+                e.printStackTrace();
                 try {
                     asyncTaskError = e;
                     for (int i = 0; i < al.size(); i++) {
@@ -631,6 +639,17 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
             finish();
         }
 
+        private void saveThumbnail(Bitmap b, String name) {
+            try {
+                Matrix m = new Matrix();
+                m.setRectToRect(new RectF(0, 0, b.getWidth(), b.getHeight()), new RectF(0, 0, 370, 370), Matrix.ScaleToFit.CENTER);
+                Bitmap resized = Bitmap.createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), m, true);
+                storeImage(resized, "thumb_" + name);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         private Bitmap tryToGetBitmap(File file,
                                       BitmapFactory.Options options,
                                       int rotate,
@@ -670,9 +689,10 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
         * Copyright (C) 2012, webXells GmbH All Rights Reserved.
         */
         private File storeImage(Bitmap bmp, String fileName) throws IOException {
+            Log.d("imagepicker", "writing bmp to " + fileName);
             int index = fileName.lastIndexOf('.');
             String ext = fileName.substring(index);
-            File file = new File(getApplicationContext().getFilesDir().getPath(), System.currentTimeMillis() +ext);
+            File file = new File(getApplicationContext().getFilesDir().getPath(), fileName);
             OutputStream outStream = new FileOutputStream(file);
 
             if (ext.compareToIgnoreCase(".png") == 0) {
@@ -686,7 +706,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
             return file;
         }
 
-        public void copyExifData(String file1, String file2){
+        public void copyExifData(String file1, String file2) {
             try {
                 ExifInterface file1Exif = new ExifInterface(file1);
                 ExifInterface file2Exif = new ExifInterface(file2);
@@ -715,35 +735,53 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
 
 
                 file2Exif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation.toString());
-                file2Exif.setAttribute(ExifInterface.TAG_APERTURE, aperture);
-                file2Exif.setAttribute(ExifInterface.TAG_DATETIME, dateTime);
-                file2Exif.setAttribute(ExifInterface.TAG_EXPOSURE_TIME, exposureTime);
-                file2Exif.setAttribute(ExifInterface.TAG_FLASH, flash);
-                file2Exif.setAttribute(ExifInterface.TAG_FOCAL_LENGTH, focalLength);
-                file2Exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, gpsAltitude);
-                file2Exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF, gpsAltitudeRef);
-                file2Exif.setAttribute(ExifInterface.TAG_GPS_DATESTAMP, gpsDateStamp);
-                file2Exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, gpsLatitude);
-                file2Exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, gpsLatitudeRef);
-                file2Exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, gpsLongitude);
-                file2Exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, gpsLongitudeRef);
-                file2Exif.setAttribute(ExifInterface.TAG_GPS_PROCESSING_METHOD, gpsProcessingMethod);
-                file2Exif.setAttribute(ExifInterface.TAG_GPS_TIMESTAMP, gpsTimestamp);
+                if (aperture != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_APERTURE, aperture);
+                if (dateTime != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_DATETIME, dateTime);
+                if (exposureTime != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_EXPOSURE_TIME, exposureTime);
+                if (flash != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_FLASH, flash);
+                if (focalLength != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_FOCAL_LENGTH, focalLength);
+                if (gpsAltitude != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, gpsAltitude);
+                if (gpsAltitudeRef != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF, gpsAltitudeRef);
+                if (gpsDateStamp != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_GPS_DATESTAMP, gpsDateStamp);
+                if (gpsLatitude != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, gpsLatitude);
+                if (gpsLatitudeRef != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, gpsLatitudeRef);
+                if (gpsLongitude != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, gpsLongitude);
+                if (gpsLongitudeRef != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, gpsLongitudeRef);
+                if (gpsProcessingMethod != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_GPS_PROCESSING_METHOD, gpsProcessingMethod);
+                if (gpsTimestamp != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_GPS_TIMESTAMP, gpsTimestamp);
+
                 file2Exif.setAttribute(ExifInterface.TAG_IMAGE_LENGTH, imageLength.toString());
                 file2Exif.setAttribute(ExifInterface.TAG_IMAGE_WIDTH, imageWidth.toString());
-                file2Exif.setAttribute(ExifInterface.TAG_ISO, iso);
-                file2Exif.setAttribute(ExifInterface.TAG_MAKE, make);
-                file2Exif.setAttribute(ExifInterface.TAG_MODEL, model);
+                if (iso != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_ISO, iso);
+                if (make != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_MAKE, make);
+                if (model != null)
+                    file2Exif.setAttribute(ExifInterface.TAG_MODEL, model);
+
                 file2Exif.setAttribute(ExifInterface.TAG_WHITE_BALANCE, whiteBalance.toString());
+
+
                 file2Exif.saveAttributes();
-            }
-            catch (FileNotFoundException io) {
+            } catch (FileNotFoundException io) {
                 io.printStackTrace();
-            }
-            catch (IOException io) {
+            } catch (IOException io) {
                 io.printStackTrace();
-            }
-            catch (NullPointerException np){
+            } catch (NullPointerException np) {
                 np.printStackTrace();
             }
         }
@@ -759,7 +797,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
             return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
         }
 
-       private String getBase64OfImage(Bitmap bm) {
+        private String getBase64OfImage(Bitmap bm) {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             bm.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
@@ -788,8 +826,8 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
     }
 
     private int calculateNextSampleSize(int sampleSize) {
-        double logBaseTwo = (int)(Math.log(sampleSize) / Math.log(2));
-        return (int)Math.pow(logBaseTwo + 1, 2);
+        double logBaseTwo = (int) (Math.log(sampleSize) / Math.log(2));
+        return (int) Math.pow(logBaseTwo + 1, 2);
     }
 
     private float calculateScale(int width, int height) {
@@ -798,18 +836,18 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
         float scale = 1.0f;
         if (desiredWidth > 0 || desiredHeight > 0) {
             if (desiredHeight == 0 && desiredWidth < width) {
-                scale = (float)desiredWidth/width;
+                scale = (float) desiredWidth / width;
 
             } else if (desiredWidth == 0 && desiredHeight < height) {
-                scale = (float)desiredHeight/height;
+                scale = (float) desiredHeight / height;
 
             } else {
                 if (desiredWidth > 0 && desiredWidth < width) {
-                    widthScale = (float)desiredWidth/width;
+                    widthScale = (float) desiredWidth / width;
                 }
 
                 if (desiredHeight > 0 && desiredHeight < height) {
-                    heightScale = (float)desiredHeight/height;
+                    heightScale = (float) desiredHeight / height;
                 }
 
                 if (widthScale < heightScale) {
