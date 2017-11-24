@@ -11,7 +11,7 @@
 #import "GMAlbumsViewController.h"
 #import "GMGridViewCell.h"
 #import "GMPHAsset.h"
-
+#import <CoreImage/CoreImage.h>
 //#import "PSYBlockTimer.h"
 #import "GMFetchItem.h"
 
@@ -492,6 +492,13 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
             
             fetch_item.be_progressed = false;
             fetch_item.be_finished = true;
+             
+             if ([dataUTI containsString:@"heic"]) {
+                 CIImage *ciImage = [CIImage imageWithData:imageData];
+                 NSData* data = [[[CIContext alloc] init] JPEGRepresentationOfImage:ciImage colorSpace:CGColorSpaceCreateDeviceRGB() options:@{}];
+                 imageData = data;
+             }
+             
             
             //asset.image_fullsize = result;
             NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);

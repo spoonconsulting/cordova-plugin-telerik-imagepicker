@@ -86,6 +86,7 @@
         <framework src="Photos.framework" />
         <framework src="SystemConfiguration.framework" />
         <framework src="QuartzCore.framework" />
+        <framework src="CoreImage.framework" />
 
     </platform>
 
