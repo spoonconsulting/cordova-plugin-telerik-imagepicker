@@ -635,7 +635,9 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                 setResult(RESULT_CANCELED, data);
             }
 
-            progress.dismiss();
+             if (!MultiImageChooserActivity.this.isFinishing() && progress != null) {
+                 progress.dismiss();
+             }
             finish();
         }
 
