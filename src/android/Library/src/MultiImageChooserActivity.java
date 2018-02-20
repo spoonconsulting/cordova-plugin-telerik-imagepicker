@@ -732,11 +732,11 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                 String iso = file1Exif.getAttribute(ExifInterface.TAG_ISO);
                 String make = file1Exif.getAttribute(ExifInterface.TAG_MAKE);
                 String model = file1Exif.getAttribute(ExifInterface.TAG_MODEL);
-                Integer orientation = file1Exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                //Integer orientation = file1Exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
                 Integer whiteBalance = file1Exif.getAttributeInt(ExifInterface.TAG_WHITE_BALANCE, 0);
 
 
-                file2Exif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation.toString());
+                file2Exif.setAttribute(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL+"");
                 if (aperture != null)
                     file2Exif.setAttribute(ExifInterface.TAG_APERTURE, aperture);
                 if (dateTime != null)
