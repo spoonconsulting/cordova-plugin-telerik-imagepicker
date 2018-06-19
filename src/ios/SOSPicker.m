@@ -32,25 +32,12 @@ typedef enum : NSUInteger {
 }
 
 - (void) requestReadPermission:(CDVInvokedUrlCommand *)command {
-    // [PHPhotoLibrary requestAuthorization:]
-    // this method works only when it is a first time, see
-    // https://developer.apple.com/library/ios/documentation/Photos/Reference/PHPhotoLibrary_Class/
-
-    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
-    if (status == PHAuthorizationStatusAuthorized) {
-        NSLog(@"Access has been granted.");
-    } else if (status == PHAuthorizationStatusDenied) {
-        NSLog(@"Access has been denied. Change your setting > this app > Photo enable");
-    } else if (status == PHAuthorizationStatusNotDetermined) {
-        // Access has not been determined. requestAuthorization: is available
-        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {}];
-    } else if (status == PHAuthorizationStatusRestricted) {
-        NSLog(@"Access has been restricted. Change your setting > Privacy > Photo enable");
-    }
-
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus authStatus) {
+        NSString* status = [self getCameraRollAuthorizationStatusAsString:authStatus];
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:status] callbackId:command.callbackId];
+    }];
 }
+
 
 - (void) getPictures:(CDVInvokedUrlCommand *)command {
 
