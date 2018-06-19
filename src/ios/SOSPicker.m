@@ -38,6 +38,18 @@ typedef enum : NSUInteger {
     }];
 }
 
+- (NSString*) getCameraRollAuthorizationStatusAsString: (PHAuthorizationStatus)authStatus
+{
+    NSString* status;
+    if(authStatus == PHAuthorizationStatusDenied || authStatus == PHAuthorizationStatusRestricted){
+        status = @"denied";
+    }else if(authStatus == PHAuthorizationStatusNotDetermined ){
+        status = @"not_determined";
+    }else if(authStatus == PHAuthorizationStatusAuthorized){
+        status = @"authorized";
+    }
+    return status;
+}
 
 - (void) getPictures:(CDVInvokedUrlCommand *)command {
 
