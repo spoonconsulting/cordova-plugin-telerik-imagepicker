@@ -587,7 +587,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                         file = storeImage(bmp, System.currentTimeMillis() + ext);
                         copyExifData(originalFile.getAbsolutePath(), file.getAbsolutePath());
                         al.add(Uri.fromFile(file).toString());
-                        saveThumbnail(bmp, file.getName());
+                        
 
                     } else if (outputType == OutputType.BASE64_STRING) {
                         al.add(getBase64OfImage(bmp));
@@ -639,17 +639,6 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                  progress.dismiss();
              }
             finish();
-        }
-
-        private void saveThumbnail(Bitmap b, String name) {
-            try {
-                Matrix m = new Matrix();
-                m.setRectToRect(new RectF(0, 0, b.getWidth(), b.getHeight()), new RectF(0, 0, 370, 370), Matrix.ScaleToFit.CENTER);
-                Bitmap resized = Bitmap.createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), m, true);
-                storeImage(resized, "thumb_" + name);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
 
         private Bitmap tryToGetBitmap(File file,
