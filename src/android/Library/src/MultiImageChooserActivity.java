@@ -593,6 +593,7 @@ public class MultiImageChooserActivity extends AppCompatActivity implements
                         al.add(getBase64OfImage(bmp));
                     }
                 }
+                bmp =null;
                 return al;
             } catch (IOException e) {
                 e.printStackTrace();
