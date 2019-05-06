@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
   xmlns:android="http://schemas.android.com/apk/res/android"
   id="cordova-plugin-telerik-imagepicker"
-  version="2.2.2">
+  version="2.3.2">
 
     <name>ImagePicker</name>
 
@@ -112,6 +112,7 @@
 
         <source-file src="src/android/com/synconset/ImagePicker/ImagePicker.java" target-dir="src/com/synconset" />
         <source-file src="src/android/com/synconset/ImagePicker/FakeR.java" target-dir="src/com/synconset" />
+        <source-file src="src/android/com/synconset/ImagePicker/ResultIPC.java" target-dir="src/com/synconset" />
 
         <source-file src="src/android/Library/src/ImageFetcher.java" target-dir="src/com/synconset"/>
         <source-file src="src/android/Library/src/MultiImageChooserActivity.java" target-dir="src/com/synconset"/>
