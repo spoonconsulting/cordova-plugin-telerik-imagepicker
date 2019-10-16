@@ -495,7 +495,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
              
             NSString *fileName =[asset valueForKey:@"filename"];
             NSString *fileExtension = [fileName pathExtension];
-             if ([dataUTI containsString:@"heic"]) {
+             if ([fileExtension containsString:@"heic"]) {
                  CIImage *ciImage = [CIImage imageWithData:imageData];
                  NSData* data = [[[CIContext alloc] init] JPEGRepresentationOfImage:ciImage colorSpace:CGColorSpaceCreateDeviceRGB() options:@{}];
                  imageData = data;
