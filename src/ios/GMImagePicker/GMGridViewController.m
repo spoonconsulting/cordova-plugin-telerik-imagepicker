@@ -493,10 +493,13 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
             fetch_item.be_progressed = false;
             fetch_item.be_finished = true;
              
-             if ([dataUTI containsString:@"heic"]) {
+            NSString *fileName =[asset valueForKey:@"filename"];
+            NSString *fileExtension = [fileName pathExtension];
+             if ([fileExtension containsString:@"heic"]) {
                  CIImage *ciImage = [CIImage imageWithData:imageData];
                  NSData* data = [[[CIContext alloc] init] JPEGRepresentationOfImage:ciImage colorSpace:CGColorSpaceCreateDeviceRGB() options:@{}];
                  imageData = data;
+                 fileExtension = @"jpg";
              }
              
             
@@ -507,7 +510,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
             NSString * filePath;
             do {
                 
-                filePath = [NSString stringWithFormat:@"%@/%@.%@", libPath, [[NSUUID UUID] UUIDString], @"jpg"];
+                filePath = [NSString stringWithFormat:@"%@/%@.%@", libPath, [[NSUUID UUID] UUIDString], [fileExtension lowercaseString]];
             } while ([fileMgr fileExistsAtPath:filePath]);
             
             fetch_item.be_saving_img = true;
