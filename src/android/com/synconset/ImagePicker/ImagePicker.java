@@ -20,8 +20,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 public class ImagePicker extends CordovaPlugin {
 
@@ -111,14 +111,10 @@ public class ImagePicker extends CordovaPlugin {
     @SuppressLint("InlinedApi")
     private void requestReadPermission() {
         if (!hasReadPermission()) {
-            ActivityCompat.requestPermissions(
-                this.cordova.getActivity(),
-                new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
-                PERMISSION_REQUEST_CODE);
+            cordova.requestPermissions(this, PERMISSION_REQUEST_CODE, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE});
+            return;
         }
-        // This method executes async and we seem to have no known way to receive the result
-        // (that's why these methods were later added to Cordova), so simply returning ok now.
-        callbackContext.success();
+        callbackContext.success(1);
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -155,19 +151,16 @@ public class ImagePicker extends CordovaPlugin {
         this.callbackContext = callbackContext;
     }
 
-/*
+
     @Override
-    public void onRequestPermissionResult(int requestCode,
-                                          String[] permissions,
-                                          int[] grantResults) throws JSONException {
+    public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
 
         // For now we just have one permission, so things can be kept simple...
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            cordova.startActivityForResult(this, imagePickerIntent, 0);
+            callbackContext.success(1);
         } else {
-            // Tell the JS layer that something went wrong...
-            callbackContext.error("Permission denied");
+            callbackContext.success(0);
         }
     }
-*/
+
 }
