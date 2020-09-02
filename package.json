@@ -10,15 +10,13 @@
     "android",
     "ios"
   ],
-  "author": {
-    "name": "Telerik-Verified-Plugins & spoonconsulting"
-  },
+  "author": "Telerik-Verified-Plugins & spoonconsulting",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker.git"
   },
   "cordova": {
-    "id": "cordova-plugin-telerik-imagepicker",
+    "id": "@spoonconsulting/cordova-plugin-telerik-imagepicker",
     "platforms": [
       "ios",
       "android",
