@@ -21,10 +21,6 @@
       "wp8"
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker.git"
-  },
   "engines": {
     "name": "cordova",
     "version": ">=3.5.0"
