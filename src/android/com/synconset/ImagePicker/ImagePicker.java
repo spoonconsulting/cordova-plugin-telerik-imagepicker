@@ -72,12 +72,12 @@ public class ImagePicker extends CordovaPlugin {
             if (requestCode == SELECT_PICTURE) {
                 if (data.getData() != null) {
                     Uri uri = data.getData();
-                    fileURIs.add(uri.toString());
+                    fileURIs.add(this.copyFileToInternalStorage(uri, ""));
                 } else {
                     ClipData clip = data.getClipData();
                     for (int i=0;i<clip.getItemCount();i++) {
                         Uri uri = clip.getItemAt(i).getUri();
-                        fileURIs.add(uri.toString());
+                        fileURIs.add(this.copyFileToInternalStorage(uri, ""));
                     }
                 }
             }
@@ -119,5 +119,49 @@ public class ImagePicker extends CordovaPlugin {
             callbackContext.success(0);
         }
     }
+
+    private String copyFileToInternalStorage(Uri uri, String newDirName) {
+        Uri returnUri = uri;
+        Cursor returnCursor = cordova.getActivity().getContentResolver().query(returnUri, new String[]{
+                OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE
+        }, null, null, null);
+
+        int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+        int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
+        returnCursor.moveToFirst();
+        String name = (returnCursor.getString(nameIndex));
+        String size = (Long.toString(returnCursor.getLong(sizeIndex)));
+
+        File output;
+        if (!newDirName.equals("")) {
+            File dir = new File(cordova.getContext() + "/" + newDirName);
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
+            output = new File(cordova.getContext() + "/" + newDirName + "/" + name);
+        } else {
+            output = new File(cordova.getContext() + "/" + name);
+        }
+        try {
+            InputStream inputStream = cordova.getActivity().getContentResolver().openInputStream(uri);
+            FileOutputStream outputStream = new FileOutputStream(output);
+            int read = 0;
+            int bufferSize = 1024;
+            final byte[] buffers = new byte[bufferSize];
+            while ((read = inputStream.read(buffers)) != -1) {
+                outputStream.write(buffers, 0, read);
+            }
+
+            inputStream.close();
+            outputStream.close();
+
+        } catch (Exception e) {
+
+            Log.e("Exception", e.getMessage());
+        }
+
+        return output.getPath();
+    }
+
 
 }
