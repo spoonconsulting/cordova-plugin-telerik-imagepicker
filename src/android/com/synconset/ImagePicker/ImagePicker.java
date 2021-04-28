@@ -140,13 +140,13 @@ public class ImagePicker extends CordovaPlugin {
 
         File output;
         if (!newDirName.equals("")) {
-            File dir = new File(cordova.getContext() + "/" + newDirName);
+            File dir = new File(cordova.getContext().getFilesDir() + "/" + newDirName);
             if (!dir.exists()) {
                 dir.mkdir();
             }
-            output = new File(cordova.getContext() + "/" + newDirName + "/" + name);
+            output = new File(cordova.getContext().getFilesDir() + "/" + newDirName + "/" + name);
         } else {
-            output = new File(cordova.getContext() + "/" + name);
+            output = new File(cordova.getContext().getFilesDir() + "/" + name);
         }
         try {
             InputStream inputStream = cordova.getActivity().getContentResolver().openInputStream(uri);
