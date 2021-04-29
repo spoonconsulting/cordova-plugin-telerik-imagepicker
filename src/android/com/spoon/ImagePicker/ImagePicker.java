@@ -1,4 +1,4 @@
-package com.synconset;
+package com.spoon;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -38,6 +38,7 @@ public class ImagePicker extends CordovaPlugin {
     private static final int SELECT_PICTURE = 200;
 
     private CallbackContext callbackContext;
+    private int maxImageCount;
 
     public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
@@ -52,37 +53,12 @@ public class ImagePicker extends CordovaPlugin {
         } else if (ACTION_GET_PICTURES.equals(action)) {
 
             final JSONObject params = args.getJSONObject(0);
+            this.maxImageCount = params.has("maximumImagesCount") ? params.getInt("maximumImagesCount") : 20;
 
             Intent imagePickerIntent = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             imagePickerIntent.setType("image/*");
             imagePickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
-            int max = 20;
-            int desiredWidth = 0;
-            int desiredHeight = 0;
-            int quality = 100;
-            int outputType = 0;
-            if (params.has("maximumImagesCount")) {
-                max = params.getInt("maximumImagesCount");
-            }
-            if (params.has("width")) {
-                desiredWidth = params.getInt("width");
-            }
-            if (params.has("height")) {
-                desiredHeight = params.getInt("height");
-            }
-            if (params.has("quality")) {
-                quality = params.getInt("quality");
-            }
-            if (params.has("outputType")) {
-                outputType = params.getInt("outputType");
-            }
-
-            imagePickerIntent.putExtra("MAX_IMAGES", max);
-            imagePickerIntent.putExtra("WIDTH", desiredWidth);
-            imagePickerIntent.putExtra("HEIGHT", desiredHeight);
-            imagePickerIntent.putExtra("QUALITY", quality);
-            imagePickerIntent.putExtra("OUTPUT_TYPE", outputType);
             cordova.startActivityForResult(this, imagePickerIntent, SELECT_PICTURE);
             return true;
         }
@@ -98,7 +74,7 @@ public class ImagePicker extends CordovaPlugin {
                     fileURIs.add(this.copyFileToInternalStorage(uri, ""));
                 } else {
                     ClipData clip = data.getClipData();
-                    for (int i=0;i<clip.getItemCount();i++) {
+                    for (int i=0; i<clip.getItemCount(); i++) {
                         Uri uri = clip.getItemAt(i).getUri();
                         fileURIs.add(this.copyFileToInternalStorage(uri, ""));
                     }
@@ -160,22 +136,22 @@ public class ImagePicker extends CordovaPlugin {
 
     private String copyFileToInternalStorage(Uri uri, String newDirName) {
         Uri returnUri = uri;
-        Cursor returnCursor = cordova.getActivity().getContentResolver().query(returnUri, new String[]{
-                OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE
-        }, null, null, null);
+        Cursor returnCursor = cordova.getActivity().getContentResolver().query(
+            returnUri,
+            new String[] { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE },
+            null,
+            null,
+            null
+        );
 
         int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-        int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
         returnCursor.moveToFirst();
-        String name = (returnCursor.getString(nameIndex));
-        String size = (Long.toString(returnCursor.getLong(sizeIndex)));
+        String name = returnCursor.getString(nameIndex);
 
         File output;
         if (!newDirName.equals("")) {
             File dir = new File(cordova.getContext().getFilesDir() + "/" + newDirName);
-            if (!dir.exists()) {
-                dir.mkdir();
-            }
+            if (!dir.exists()) { dir.mkdir(); }
             output = new File(cordova.getContext().getFilesDir() + "/" + newDirName + "/" + name);
         } else {
             output = new File(cordova.getContext().getFilesDir() + "/" + name);
@@ -189,17 +165,13 @@ public class ImagePicker extends CordovaPlugin {
             while ((read = inputStream.read(buffers)) != -1) {
                 outputStream.write(buffers, 0, read);
             }
-
             inputStream.close();
             outputStream.close();
 
         } catch (Exception e) {
-
-            Log.e("Exception", e.getMessage());
+            Log.e("In copyFileToInternalStorage ", e.getMessage());
         }
 
         return output.getPath();
     }
-
-
 }

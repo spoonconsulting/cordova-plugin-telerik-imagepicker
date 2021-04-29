@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
   xmlns:android="http://schemas.android.com/apk/res/android"
   id="@spoonconsulting/cordova-plugin-telerik-imagepicker"
-  version="1.0.2">
+  version="2.0.0">
 
     <name>ImagePicker</name>
 
@@ -95,54 +95,12 @@
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="ImagePicker">
-                <param name="android-package" value="com.synconset.ImagePicker"/>
+                <param name="android-package" value="com.spoon.ImagePicker"/>
             </feature>
-        </config-file>
-
-        <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <activity android:label="@string/multi_app_name" android:configChanges="orientation|screenSize|keyboardHidden" android:name="com.synconset.MultiImageChooserActivity" android:theme="@style/Theme.AppCompat.Light">
-            </activity>
         </config-file>
 
         <framework src="com.android.support:appcompat-v7:27.1.1" />
 
-        <source-file src="src/android/com/synconset/ImagePicker/ImagePicker.java" target-dir="src/com/synconset" />
-        <source-file src="src/android/com/synconset/ImagePicker/FakeR.java" target-dir="src/com/synconset" />
-        <source-file src="src/android/com/synconset/ImagePicker/ResultIPC.java" target-dir="src/com/synconset" />
-
-        <source-file src="src/android/Library/src/ImageFetcher.java" target-dir="src/com/synconset"/>
-        <source-file src="src/android/Library/src/MultiImageChooserActivity.java" target-dir="src/com/synconset"/>
-
-        <resource-file src="src/android/Library/res/anim/image_pop_in.xml" target="res/anim/image_pop_in.xml"/>
-        <resource-file src="src/android/Library/res/drawable/grid_background.xml" target="res/drawable/grid_background.xml"/>
-        <resource-file src="src/android/Library/res/drawable-hdpi/image_bg.9.png" target="res/drawable-hdpi/image_bg.9.png"/>
-        <resource-file src="src/android/Library/res/drawable-hdpi/loading_icon.png" target="res/drawable-hdpi/loading_icon.png"/>
-        <resource-file src="src/android/Library/res/drawable-mdpi/ic_action_discard_dark.png" target="res/drawable-mdpi/ic_action_discard_dark.png"/>
-        <resource-file src="src/android/Library/res/drawable-mdpi/ic_action_discard_light.png" target="res/drawable-mdpi/ic_action_discard_light.png"/>
-        <resource-file src="src/android/Library/res/drawable-mdpi/ic_action_done_dark.png" target="res/drawable-mdpi/ic_action_done_dark.png"/>
-        <resource-file src="src/android/Library/res/drawable-mdpi/ic_action_done_light.png" target="res/drawable-mdpi/ic_action_done_light.png"/>
-        <resource-file src="src/android/Library/res/drawable-mdpi/ic_launcher.png" target="res/drawable-mdpi/ic_launcher.png"/>
-        <resource-file src="src/android/Library/res/drawable-xhdpi/ic_action_discard_dark.png" target="res/drawable-xhdpi/ic_action_discard_dark.png"/>
-        <resource-file src="src/android/Library/res/drawable-xhdpi/ic_action_discard_light.png" target="res/drawable-xhdpi/ic_action_discard_light.png"/>
-        <resource-file src="src/android/Library/res/drawable-xhdpi/ic_action_done_dark.png" target="res/drawable-xhdpi/ic_action_done_dark.png"/>
-        <resource-file src="src/android/Library/res/drawable-xhdpi/ic_action_done_light.png" target="res/drawable-xhdpi/ic_action_done_light.png"/>
-        <resource-file src="src/android/Library/res/drawable-xhdpi/ic_launcher.png" target="res/drawable-xhdpi/ic_launcher.png"/>
-        <resource-file src="src/android/Library/res/layout/actionbar_custom_view_done_discard.xml" target="res/layout/actionbar_custom_view_done_discard.xml"/>
-        <resource-file src="src/android/Library/res/layout/actionbar_discard_button.xml" target="res/layout/actionbar_discard_button.xml"/>
-        <resource-file src="src/android/Library/res/layout/actionbar_done_button.xml" target="res/layout/actionbar_done_button.xml"/>
-        <resource-file src="src/android/Library/res/layout/multiselectorgrid.xml" target="res/layout/multiselectorgrid.xml"/>
-        <resource-file src="src/android/Library/res/values/multiimagechooser_strings_en.xml" target="res/values/multiimagechooser_strings_en.xml"/>
-        <resource-file src="src/android/Library/res/values/themes.xml" target="res/values/themes.xml"/>
-
-        <resource-file src="src/android/Library/res/values-de/multiimagechooser_strings_de.xml" target="res/values-de/multiimagechooser_strings_de.xml"/>
-        <resource-file src="src/android/Library/res/values-es/multiimagechooser_strings_es.xml" target="res/values-es/multiimagechooser_strings_es.xml"/>
-        <resource-file src="src/android/Library/res/values-fr/multiimagechooser_strings_fr.xml" target="res/values-fr/multiimagechooser_strings_fr.xml"/>
-        <resource-file src="src/android/Library/res/values-hu/multiimagechooser_strings_hu.xml" target="res/values-hu/multiimagechooser_strings_hu.xml"/>
-        <resource-file src="src/android/Library/res/values-ja/multiimagechooser_strings_ja.xml" target="res/values-ja/multiimagechooser_strings_ja.xml"/>
-        <resource-file src="src/android/Library/res/values-ko/multiimagechooser_strings_ko.xml" target="res/values-ko/multiimagechooser_strings_ko.xml"/>
-        <source-file src="src/android/Library/res/values-pl/multiimagechooser_strings_pl.xml" target-dir="res/values-pl"/>
-
-        <framework src="src/android/ignorelinterrors.gradle" custom="true" type="gradleReference"/>
-        <framework src="src/android/androidtarget.gradle" custom="true" type="gradleReference"/>
+        <source-file src="src/android/com/spoon/ImagePicker/ImagePicker.java" target-dir="src/com/spoon" />
     </platform>
 </plugin>
