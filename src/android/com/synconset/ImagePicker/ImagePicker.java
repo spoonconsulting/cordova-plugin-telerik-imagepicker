@@ -2,16 +2,20 @@ package com.synconset;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -22,9 +26,14 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import androidx.core.content.ContextCompat;
+
 
 public class ImagePicker extends CordovaPlugin {
     private static final String ACTION_GET_PICTURES = "getPictures";
+    private static final String ACTION_HAS_READ_PERMISSION = "hasReadPermission";
+    private static final String ACTION_REQUEST_READ_PERMISSION = "requestReadPermission";
+
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static final int SELECT_PICTURE = 200;
 
@@ -32,8 +41,16 @@ public class ImagePicker extends CordovaPlugin {
 
     public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
+        if (ACTION_HAS_READ_PERMISSION.equals(action)) {
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, hasReadPermission()));
+            return true;
 
-        if (ACTION_GET_PICTURES.equals(action)) {
+        } else if (ACTION_REQUEST_READ_PERMISSION.equals(action)) {
+            requestReadPermission();
+            return true;
+
+        } else if (ACTION_GET_PICTURES.equals(action)) {
+
             final JSONObject params = args.getJSONObject(0);
 
             Intent imagePickerIntent = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -124,6 +141,21 @@ public class ImagePicker extends CordovaPlugin {
         } else {
             callbackContext.success(0);
         }
+    }
+
+    @SuppressLint("InlinedApi")
+    private boolean hasReadPermission() {
+        return Build.VERSION.SDK_INT < 23 ||
+                PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(this.cordova.getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
+    }
+
+    @SuppressLint("InlinedApi")
+    private void requestReadPermission() {
+        if (!hasReadPermission()) {
+            cordova.requestPermissions(this, PERMISSION_REQUEST_CODE, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE});
+            return;
+        }
+        callbackContext.success(1);
     }
 
     private String copyFileToInternalStorage(Uri uri, String newDirName) {
