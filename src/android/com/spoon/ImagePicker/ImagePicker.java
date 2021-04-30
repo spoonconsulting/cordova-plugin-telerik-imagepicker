@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,7 +28,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import androidx.core.content.ContextCompat;
-
 
 public class ImagePicker extends CordovaPlugin {
     private static final String ACTION_GET_PICTURES = "getPictures";
@@ -58,7 +58,6 @@ public class ImagePicker extends CordovaPlugin {
             Intent imagePickerIntent = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             imagePickerIntent.setType("image/*");
             imagePickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-            imagePickerIntent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
 
             cordova.startActivityForResult(this, imagePickerIntent, SELECT_PICTURE);
             return true;
@@ -78,7 +77,10 @@ public class ImagePicker extends CordovaPlugin {
                     for (int i=0; i<clip.getItemCount(); i++) {
                         Uri uri = clip.getItemAt(i).getUri();
                         fileURIs.add(this.copyFileToInternalStorage(uri, ""));
-                        if (i + 1 > this.maxImageCount - 1) { break; }
+                        if (i + 1 > this.maxImageCount - 1) {
+                            this.showLimitExceededMessage();
+                            break;
+                        }
                     }
                 }
             }
@@ -171,9 +173,16 @@ public class ImagePicker extends CordovaPlugin {
             outputStream.close();
 
         } catch (Exception e) {
-            Log.e("In copyFileToInternalStorage ", e.getMessage());
+            Log.e("copyToInternalStorage ", e.getMessage());
         }
 
         return output.getPath();
+    }
+
+    private void showLimitExceededMessage() {
+        String toastMsg = "Not more than " + this.maxImageCount + " images can be selected at a time." +
+                " The first " + this.maxImageCount + " images will be saved and the rest will be discarded.";
+
+        (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
     }
 }
