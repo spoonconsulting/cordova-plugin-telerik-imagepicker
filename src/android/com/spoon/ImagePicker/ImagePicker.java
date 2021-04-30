@@ -58,6 +58,7 @@ public class ImagePicker extends CordovaPlugin {
             Intent imagePickerIntent = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             imagePickerIntent.setType("image/*");
             imagePickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            imagePickerIntent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
 
             cordova.startActivityForResult(this, imagePickerIntent, SELECT_PICTURE);
             return true;
@@ -77,6 +78,7 @@ public class ImagePicker extends CordovaPlugin {
                     for (int i=0; i<clip.getItemCount(); i++) {
                         Uri uri = clip.getItemAt(i).getUri();
                         fileURIs.add(this.copyFileToInternalStorage(uri, ""));
+                        if (i + 1 > this.maxImageCount - 1) { break; }
                     }
                 }
             }
