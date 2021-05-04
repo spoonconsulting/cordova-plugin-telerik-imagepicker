@@ -101,6 +101,6 @@
 
         <framework src="com.android.support:appcompat-v7:27.1.1" />
 
-        <source-file src="src/android/com/spoon/ImagePicker/ImagePicker.java" target-dir="src/com/spoon/imagepicker" />
+        <source-file src="src/android/ImagePicker.java" target-dir="src/com/spoon/imagepicker" />
     </platform>
 </plugin>
