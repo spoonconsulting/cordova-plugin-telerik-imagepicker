@@ -95,12 +95,12 @@
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="ImagePicker">
-                <param name="android-package" value="com.spoon.ImagePicker"/>
+                <param name="android-package" value="com.spoon.imagepicker.ImagePicker"/>
             </feature>
         </config-file>
 
         <framework src="com.android.support:appcompat-v7:27.1.1" />
 
-        <source-file src="src/android/com/spoon/ImagePicker/ImagePicker.java" target-dir="src/com/spoon" />
+        <source-file src="src/android/com/spoon/ImagePicker/ImagePicker.java" target-dir="src/com/spoon/imagepicker" />
     </platform>
 </plugin>

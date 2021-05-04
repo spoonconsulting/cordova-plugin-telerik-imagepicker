@@ -1,4 +1,4 @@
-package com.spoon;
+package com.spoon.imagepicker;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -71,12 +71,22 @@ public class ImagePicker extends CordovaPlugin {
             if (requestCode == SELECT_PICTURE) {
                 if (data.getData() != null) {
                     Uri uri = data.getData();
-                    fileURIs.add(this.copyFileToInternalStorage(uri, ""));
+                    String path = this.copyFileToInternalStorage(uri, "");
+                    if (path.equals("-1")) {
+                        callbackContext.error("For the moment cross sharing of media between work profile and personal profile is not supported.");
+                        return;
+                    }
+                    fileURIs.add(path);
                 } else {
                     ClipData clip = data.getClipData();
                     for (int i=0; i<clip.getItemCount(); i++) {
                         Uri uri = clip.getItemAt(i).getUri();
-                        fileURIs.add(this.copyFileToInternalStorage(uri, ""));
+                        String path = this.copyFileToInternalStorage(uri, "");
+                        if (path.equals("-1")) {
+                            callbackContext.error("For the moment cross sharing of media between work profile and personal profile is not supported.");
+                            return;
+                        }
+                        fileURIs.add(path);
                         if (i + 1 > this.maxImageCount - 1) {
                             this.showLimitExceededMessage();
                             break;
@@ -140,13 +150,21 @@ public class ImagePicker extends CordovaPlugin {
 
     private String copyFileToInternalStorage(Uri uri, String newDirName) {
         Uri returnUri = uri;
-        Cursor returnCursor = cordova.getActivity().getContentResolver().query(
-            returnUri,
-            new String[] { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE },
-            null,
-            null,
-            null
-        );
+        Cursor returnCursor = null;
+        try {
+            returnCursor = cordova.getActivity().getContentResolver().query(
+                    returnUri,
+                    new String[] { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE },
+                    null,
+                    null,
+                    null
+            );
+        } catch (SecurityException se) {
+            String toastMsg = "For the moment cross sharing of media between work profile and personal profile is not supported.";
+            (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
+            System.out.println(se.getMessage());
+            return "-1";
+        }
 
         int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
         returnCursor.moveToFirst();
