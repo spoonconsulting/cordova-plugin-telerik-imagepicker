@@ -55,11 +55,12 @@ public class ImagePicker extends CordovaPlugin {
             final JSONObject params = args.getJSONObject(0);
             this.maxImageCount = params.has("maximumImagesCount") ? params.getInt("maximumImagesCount") : 20;
 
-            Intent imagePickerIntent = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            Intent imagePickerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             imagePickerIntent.setType("image/*");
             imagePickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
             cordova.startActivityForResult(this, imagePickerIntent, SELECT_PICTURE);
+            this.showLimitExceededMessage();
             return true;
         }
         return false;
@@ -87,10 +88,7 @@ public class ImagePicker extends CordovaPlugin {
                             return;
                         }
                         fileURIs.add(path);
-                        if (i + 1 > this.maxImageCount - 1) {
-                            this.showLimitExceededMessage();
-                            break;
-                        }
+                        if (i + 1 > this.maxImageCount - 1) { break; }
                     }
                 }
             }
