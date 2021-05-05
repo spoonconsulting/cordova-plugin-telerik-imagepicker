@@ -37,6 +37,8 @@ public class ImagePicker extends CordovaPlugin {
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static final int SELECT_PICTURE = 200;
 
+    private static final String CROSS_USER_PROFILE_ACCESS_DENIED = "Cannot access file. (-1)";
+
     private CallbackContext callbackContext;
     private int maxImageCount;
 
@@ -60,7 +62,7 @@ public class ImagePicker extends CordovaPlugin {
             imagePickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
 
             cordova.startActivityForResult(this, imagePickerIntent, SELECT_PICTURE);
-            this.showLimitExceededMessage();
+            this.showMaxLimitWarning();
             return true;
         }
         return false;
@@ -74,7 +76,7 @@ public class ImagePicker extends CordovaPlugin {
                     Uri uri = data.getData();
                     String path = this.copyFileToInternalStorage(uri, "");
                     if (path.equals("-1")) {
-                        callbackContext.error("For the moment cross sharing of media between work profile and personal profile is not supported.");
+                        callbackContext.error(CROSS_USER_PROFILE_ACCESS_DENIED);
                         return;
                     }
                     fileURIs.add(path);
@@ -84,7 +86,7 @@ public class ImagePicker extends CordovaPlugin {
                         Uri uri = clip.getItemAt(i).getUri();
                         String path = this.copyFileToInternalStorage(uri, "");
                         if (path.equals("-1")) {
-                            callbackContext.error("For the moment cross sharing of media between work profile and personal profile is not supported.");
+                            callbackContext.error(CROSS_USER_PROFILE_ACCESS_DENIED);
                             return;
                         }
                         fileURIs.add(path);
@@ -160,7 +162,7 @@ public class ImagePicker extends CordovaPlugin {
         } catch (SecurityException se) {
             String toastMsg = "For the moment cross sharing of media between work profile and personal profile is not supported.";
             (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
-            System.out.println(se.getMessage());
+            Log.d("error", se.getMessage());
             return "-1";
         }
 
@@ -195,10 +197,8 @@ public class ImagePicker extends CordovaPlugin {
         return output.getPath();
     }
 
-    private void showLimitExceededMessage() {
-        String toastMsg = "Not more than " + this.maxImageCount + " images can be selected at a time." +
-                " The first " + this.maxImageCount + " images will be saved and the rest will be discarded.";
-
+    private void showMaxLimitWarning() {
+        String toastMsg = "Only the first " + this.maxImageCount + " images selected will be taken.";
         (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
     }
 }
