@@ -78,7 +78,7 @@ window.imagePicker.getPictures(
     
 ### Note for Android Use
 
-When outputType is FILE_URI the plugin returns images that are stored in a temporary directory.  These images will often not be deleted automatically though.  The files should be moved or deleted after you get their filepaths in javascript. If Base64 Strings are being returned, there is nothing to clean up.
+The 'maximumImagesCount' option is currently the only option supported for Android
 
 ## Android 6 (M) Permissions
 On Android 6 you need to request permission to read external storage at runtime when targeting API level 23+.
@@ -119,18 +119,6 @@ The user will then need to allow access and invoke the same method again after d
 For iOS this plugin uses the ELCImagePickerController, with slight modifications for the iOS image picker.  ELCImagePicker uses the MIT License which can be found in the file LICENSE.
 
 https://github.com/B-Sides/ELCImagePickerController
-
-#### MultiImageChooser
-
-For Android this plugin uses MultiImageChooser, with modifications.  MultiImageChooser uses the BSD 2-Clause License which can be found in the file BSD_LICENSE.  Some code inside MultImageChooser is licensed under the Apache license which can be found in the file APACHE_LICENSE.
-
-https://github.com/derosa/MultiImageChooser
-
-#### FakeR
-
-Code(FakeR) was also taken from the phonegap BarCodeScanner plugin.  This code uses the MIT license.
-
-https://github.com/wildabeast/BarcodeScanner
 
 ## License
 
