@@ -97,14 +97,14 @@ public class ImagePicker extends CordovaPlugin {
                         for (int i = 0; i < clip.getItemCount(); i++) {
                             Uri uri = clip.getItemAt(i).getUri();
                             String path = ImagePicker.this.copyFileToInternalStorage(uri, "");
-                          if (path.equals("-1")) {
-                              callbackContext.error(CROSS_USER_PROFILE_ACCESS_DENIED);
-                              return;
-                          }
-                          fileURIs.add(path);
-                          if (i + 1 > ImagePicker.this.maxImageCount - 1) {
-                              break;
-                          }
+                            if (path.equals("-1")) {
+                                callbackContext.error(CROSS_USER_PROFILE_ACCESS_DENIED);
+                                return;
+                            }
+                            fileURIs.add(path);
+                            if (i + 1 > ImagePicker.this.maxImageCount - 1) {
+                                break;
+                            }
                         }
                     }
                 }
