@@ -1,7 +1,7 @@
 import { Component, NgZone } from '@angular/core';
 import { WebView } from '@ionic-native/ionic-webview/ngx';
 
-declare var window;
+declare var imagePicker: any;
 
 @Component({
   selector: 'app-home',
@@ -23,7 +23,7 @@ export class HomePage {
       outputType: 1,
     };
 
-    window.imagePicker.getPictures(
+    imagePicker.getPictures(
       (results) => {
         this.images = [];
         this.images = [];
@@ -45,7 +45,7 @@ export class HomePage {
   }
 
   hasReadPermission() {
-    window.imagePicker.hasReadPermission(function (result) {
+    imagePicker.hasReadPermission(function (result) {
       if (!result) {
         this.requestReadPermission();
       }
@@ -53,7 +53,7 @@ export class HomePage {
   }
 
   requestReadPermission() {
-    window.imagePicker.requestReadPermission();
+    imagePicker.requestReadPermission();
   }
 
   splitGrid(perRow: number) {
