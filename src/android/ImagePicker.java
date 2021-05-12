@@ -77,11 +77,11 @@ public class ImagePicker extends CordovaPlugin {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
-            cordova.getActivity().runOnUiThread(() -> {
-                showLoader();
-            });
-
             try {
+                cordova.getActivity().runOnUiThread(() -> {
+                    showLoader();
+                });
+                
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     ArrayList<String> fileURIs = new ArrayList<>();
                     if (requestCode == SELECT_PICTURE) {
