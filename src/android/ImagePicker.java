@@ -81,44 +81,48 @@ public class ImagePicker extends CordovaPlugin {
                 showLoader();
             });
 
-            if (resultCode == Activity.RESULT_OK && data != null) {
-                ArrayList<String> fileURIs = new ArrayList<>();
-                if (requestCode == SELECT_PICTURE) {
-                    if (data.getData() != null) {
-                        Uri uri = data.getData();
-                        String path = ImagePicker.this.copyFileToInternalStorage(uri, "");
-                        if (path.equals("-1")) {
-                            callbackContext.error(CROSS_USER_PROFILE_ACCESS_DENIED);
-                            return;
-                        }
-                        fileURIs.add(path);
-                    } else {
-                        ClipData clip = data.getClipData();
-                        for (int i = 0; i < clip.getItemCount(); i++) {
-                            Uri uri = clip.getItemAt(i).getUri();
+            try {
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    ArrayList<String> fileURIs = new ArrayList<>();
+                    if (requestCode == SELECT_PICTURE) {
+                        if (data.getData() != null) {
+                            Uri uri = data.getData();
                             String path = ImagePicker.this.copyFileToInternalStorage(uri, "");
                             if (path.equals("-1")) {
                                 callbackContext.error(CROSS_USER_PROFILE_ACCESS_DENIED);
                                 return;
                             }
                             fileURIs.add(path);
-                            if (i + 1 > ImagePicker.this.maxImageCount - 1) {
-                                break;
+                        } else {
+                            ClipData clip = data.getClipData();
+                            for (int i = 0; i < clip.getItemCount(); i++) {
+                                Uri uri = clip.getItemAt(i).getUri();
+                                String path = ImagePicker.this.copyFileToInternalStorage(uri, "");
+                                if (path.equals("-1")) {
+                                    callbackContext.error(CROSS_USER_PROFILE_ACCESS_DENIED);
+                                    return;
+                                }
+                                fileURIs.add(path);
+                                if (i + 1 > ImagePicker.this.maxImageCount - 1) {
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-                JSONArray res = new JSONArray(fileURIs);
-                callbackContext.success(res);
+                    JSONArray res = new JSONArray(fileURIs);
+                    callbackContext.success(res);
 
-            } else if (resultCode == Activity.RESULT_CANCELED && data != null) {
-                String error = data.getStringExtra("ERRORMESSAGE");
-                callbackContext.error(error);
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                JSONArray res = new JSONArray();
-                callbackContext.success(res);
-            } else {
-                callbackContext.error("No images selected");
+                } else if (resultCode == Activity.RESULT_CANCELED && data != null) {
+                    String error = data.getStringExtra("ERRORMESSAGE");
+                    callbackContext.error(error);
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+                    JSONArray res = new JSONArray();
+                    callbackContext.success(res);
+                } else {
+                    callbackContext.error("No images selected");
+                }
+            } catch (Exception e) {
+                callbackContext.error("Unexpected error: " + e);
             }
 
             cordova.getActivity().runOnUiThread(() -> {
@@ -131,6 +135,8 @@ public class ImagePicker extends CordovaPlugin {
         Context context = cordova.getActivity().getApplicationContext();
         this.layout = new LinearLayout(context);
         this.layout.setGravity(Gravity.CENTER);
+        this.layout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT));
+        this.layout.setBackgroundColor(Color.parseColor("#A6000000"));
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.MATCH_PARENT
@@ -147,6 +153,7 @@ public class ImagePicker extends CordovaPlugin {
     private void hideLoader() {
         if (this.layout != null) {
             this.layout.removeAllViews();
+            ((ViewGroup) this.layout.getParent()).removeView(layout);
             this.layout = null;
             cordova.getActivity().getWindow()
               .clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
