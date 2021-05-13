@@ -44,7 +44,7 @@ public class ImagePicker extends CordovaPlugin {
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static final int SELECT_PICTURE = 200;
 
-    private static final String CROSS_USER_PROFILE_ACCESS_DENIED = "Cannot access file. (-1)";
+    private static final String FILE_ACCESS_ERROR = "Cannot access file. (-1)";
 
     private CallbackContext callbackContext;
     private int maxImageCount;
@@ -55,11 +55,9 @@ public class ImagePicker extends CordovaPlugin {
         if (ACTION_HAS_READ_PERMISSION.equals(action)) {
             callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, hasReadPermission()));
             return true;
-
         } else if (ACTION_REQUEST_READ_PERMISSION.equals(action)) {
             requestReadPermission();
             return true;
-
         } else if (ACTION_GET_PICTURES.equals(action)) {
             final JSONObject params = args.getJSONObject(0);
             this.maxImageCount = params.has("maximumImagesCount") ? params.getInt("maximumImagesCount") : 20;
@@ -82,28 +80,30 @@ public class ImagePicker extends CordovaPlugin {
                     showLoader();
                 });
                 
+                Uri uri;
+                String path;
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     ArrayList<String> fileURIs = new ArrayList<>();
                     if (requestCode == SELECT_PICTURE) {
                         if (data.getData() != null) {
-                            Uri uri = data.getData();
-                            String path = ImagePicker.this.copyFileToInternalStorage(uri, "");
+                            uri = data.getData();
+                            path = ImagePicker.this.copyFileToInternalStorage(uri, "");
                             if (path.equals("-1")) {
-                                callbackContext.error(CROSS_USER_PROFILE_ACCESS_DENIED);
+                                callbackContext.error(FILE_ACCESS_ERROR);
                                 return;
                             }
                             fileURIs.add(path);
                         } else {
                             ClipData clip = data.getClipData();
                             for (int i = 0; i < clip.getItemCount(); i++) {
-                                Uri uri = clip.getItemAt(i).getUri();
-                                String path = ImagePicker.this.copyFileToInternalStorage(uri, "");
+                                uri = clip.getItemAt(i).getUri();
+                                path = ImagePicker.this.copyFileToInternalStorage(uri, "");
                                 if (path.equals("-1")) {
-                                    callbackContext.error(CROSS_USER_PROFILE_ACCESS_DENIED);
+                                    callbackContext.error(FILE_ACCESS_ERROR);
                                     return;
                                 }
                                 fileURIs.add(path);
-                                if (i + 1 > ImagePicker.this.maxImageCount - 1) {
+                                if (i + 1 >= ImagePicker.this.maxImageCount) {
                                     break;
                                 }
                             }
@@ -111,23 +111,22 @@ public class ImagePicker extends CordovaPlugin {
                     }
                     JSONArray res = new JSONArray(fileURIs);
                     callbackContext.success(res);
-
                 } else if (resultCode == Activity.RESULT_CANCELED && data != null) {
                     String error = data.getStringExtra("ERRORMESSAGE");
-                    callbackContext.error(error);
+                    callbackContext.error("Error: " + error);
                 } else if (resultCode == Activity.RESULT_CANCELED) {
                     JSONArray res = new JSONArray();
                     callbackContext.success(res);
                 } else {
                     callbackContext.error("No images selected");
                 }
+                
+                cordova.getActivity().runOnUiThread(() -> {
+                    hideLoader();
+                });
             } catch (Exception e) {
                 callbackContext.error("Unexpected error: " + e);
             }
-
-            cordova.getActivity().runOnUiThread(() -> {
-                hideLoader();
-            });
         });
     }
 
@@ -209,8 +208,7 @@ public class ImagePicker extends CordovaPlugin {
                 null
             );
         } catch (SecurityException se) {
-            String toastMsg = "For the moment cross sharing of media between work profile and personal profile is not supported.";
-            (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
+            (Toast.makeText(cordova.getContext(), FILE_ACCESS_ERROR, Toast.LENGTH_LONG)).show();
             Log.d("error", se.getMessage());
             return "-1";
         }
