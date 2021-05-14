@@ -10,8 +10,6 @@ declare var imagePicker: any;
 })
 export class HomePage {
   images: Array<any> = [];
-  grid: Array<Array<string>> = [];
-  imgPerRow: number = 3;
   options: any;
 
   constructor(private zone: NgZone, private webview: WebView) {
@@ -26,7 +24,6 @@ export class HomePage {
     imagePicker.getPictures(
       (results) => {
         this.images = [];
-        this.images = [];
 
         this.zone.run(() => {
           for (var i = 0; i < results.length; i++) {
@@ -34,7 +31,6 @@ export class HomePage {
             let path = this.webview.convertFileSrc(file);
             this.images.push(path);
           }
-          this.splitGrid(this.imgPerRow);
         });
       },
       (error) => {
@@ -56,25 +52,7 @@ export class HomePage {
     imagePicker.requestReadPermission();
   }
 
-  splitGrid(perRow: number) {
-    let row = 0;
-    this.grid = Array(Math.ceil(this.images.length / perRow));
-
-    if (this.images.length == 0) {
-      this.grid = [];
-    }
-
-    for (let i = 0; i < this.images.length; i += perRow) {
-      this.grid[row] = Array(perRow);
-      for (let j = 0; j < perRow; j++) {
-        this.images[i + j] ? (this.grid[row][j] = this.images[i + j]) : '';
-      }
-      row++;
-    }
-  }
-
   removeImage(image: string) {
     this.images = this.images.filter((img) => img !== image);
-    this.splitGrid(this.imgPerRow);
   }
 }
