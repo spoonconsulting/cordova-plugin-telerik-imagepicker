@@ -1,8 +1,8 @@
 {
-  "name": "demo",
+  "name": "ImagePicker demo",
   "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "https://ionicframework.com/",
+  "author": "Spoon Consulting Ltd",
+  "homepage": "http://spoonconsulting.com/",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -68,11 +68,11 @@
     "cordova-plugin-androidx": "^1.0.2",
     "cordova-plugin-androidx-adapter": "^1.1.0"
   },
-  "description": "An Ionic project",
+  "description": "Demo app for image picker cordova",
   "cordova": {
     "plugins": {
       "@spoonconsulting/cordova-plugin-telerik-imagepicker": {
-        "PHOTO_LIBRARY_USAGE_DESCRIPTION": "DemoIPicker require access to photo library to choose from existing photos."
+        "PHOTO_LIBRARY_USAGE_DESCRIPTION": "ImagePicker demo require access to photo library to choose from existing photos."
       },
       "cordova-plugin-whitelist": {},
       "cordova-plugin-statusbar": {},
