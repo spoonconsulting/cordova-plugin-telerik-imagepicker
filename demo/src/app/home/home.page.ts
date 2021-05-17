@@ -1,12 +1,12 @@
-import { Component, NgZone } from "@angular/core";
-import { WebView } from "@ionic-native/ionic-webview/ngx";
+import { Component, NgZone } from '@angular/core';
+import { WebView } from '@ionic-native/ionic-webview/ngx';
 
 declare var imagePicker: any;
 
 @Component({
-  selector: "app-home",
-  templateUrl: "home.page.html",
-  styleUrls: ["home.page.scss"],
+  selector: 'app-home',
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
 })
 export class HomePage {
   images: Array<any> = [];
@@ -27,14 +27,14 @@ export class HomePage {
 
         this.zone.run(() => {
           for (var i = 0; i < results.length; i++) {
-            let file = "file://" + results[i];
+            let file = 'file://' + results[i];
             let path = this.webview.convertFileSrc(file);
             this.images.push(path);
           }
         });
       },
       (error) => {
-        console.log("Error: " + error);
+        console.log('Error: ' + error);
       },
       this.options
     );
