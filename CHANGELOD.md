@@ -1,6 +1,6 @@
 ## [2.0.1](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/1.0.2...2.0.1) (2021-05-18)
 
-* **android:** Added loader after images have selected to avoid blank screen during transition from file explorer and app's current page
+* **android:** Added loader after images have been selected to avoid blank screen during transition from file explorer and app's current page
 
 ## [2.0.0](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/1.0.2...2.0.0) (2021-05-05)
 
