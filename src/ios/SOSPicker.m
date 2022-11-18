@@ -19,7 +19,7 @@ typedef enum : NSUInteger {
     BASE64_STRING = 1
 } SOSPickerOutputType;
 
-@interface SOSPicker () <GMImagePickerControllerDelegate>
+@interface SOSPicker () <GMImagePickerControllerDelegate, UINavigationControllerDelegate, UIAdaptivePresentationControllerDelegate>
 @end
 
 @implementation SOSPicker
@@ -74,25 +74,24 @@ typedef enum : NSUInteger {
 
 - (void)launchGMImagePicker:(bool)allow_video title:(NSString *)title message:(NSString *)message disable_popover:(BOOL)disable_popover maximumImagesCount:(NSInteger)maximumImagesCount
 {
-    GMImagePickerController *picker = [[GMImagePickerController alloc] init:allow_video];
-    picker.delegate = self;
-    picker.maximumImagesCount = maximumImagesCount;
-    picker.title = title;
-    picker.customNavigationBarPrompt = message;
-    picker.colsInPortrait = 4;
-    picker.colsInLandscape = 6;
-    picker.minimumInteritemSpacing = 2.0;
-
+    self.picker = [[GMImagePickerController alloc] init:allow_video];
+    self.picker.delegate = self;
+    self.picker.presentationController.delegate=self;
+    self.picker.maximumImagesCount = maximumImagesCount;
+    self.picker.title = title;
+    self.picker.customNavigationBarPrompt = message;
+    self.picker.colsInPortrait = 4;
+    self.picker.colsInLandscape = 6;
+    self.picker.minimumInteritemSpacing = 2.0;
     if(!disable_popover) {
-        picker.modalPresentationStyle = UIModalPresentationPopover;
+        self.picker.modalPresentationStyle = UIModalPresentationPopover;
 
-        UIPopoverPresentationController *popPC = picker.popoverPresentationController;
+        UIPopoverPresentationController *popPC = self.picker.popoverPresentationController;
         popPC.permittedArrowDirections = UIPopoverArrowDirectionAny;
-        popPC.sourceView = picker.view;
+        popPC.sourceView = self.picker.view;
         //popPC.sourceRect = nil;
     }
-
-    [self.viewController showViewController:picker sender:nil];
+    [self.viewController showViewController:self.picker sender:nil];
 }
 
 
@@ -157,6 +156,23 @@ typedef enum : NSUInteger {
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
     [self.viewController dismissViewControllerAnimated:YES completion:nil];
     NSLog(@"UIImagePickerController: User pressed cancel button");
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerWillDismiss:(UIPresentationController *)presentationController {
+}
+
+- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController {
+
+    // This is probably where you want to put your code that you want to call.
+
+   CDVPluginResult* pluginResult = nil;
+   NSArray* emptyArray = [NSArray array];
+   pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:emptyArray];
+   [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+   [self.picker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    NSLog(@"GMImagePicker: User swiped down to cancel");
 }
 
 #pragma mark - GMImagePickerControllerDelegate
@@ -248,6 +264,7 @@ typedef enum : NSUInteger {
    [picker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
    NSLog(@"GMImagePicker: User pressed cancel button");
 }
+
 
 
 @end
