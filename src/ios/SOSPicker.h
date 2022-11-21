@@ -8,6 +8,7 @@
 
 #import <Cordova/CDVPlugin.h>
 
+
 @interface SOSPicker : CDVPlugin < UINavigationControllerDelegate, UIScrollViewDelegate>
 
 @property (copy)   NSString* callbackId;
@@ -22,4 +23,5 @@
 @property (nonatomic, assign) NSInteger height;
 @property (nonatomic, assign) NSInteger quality;
 @property (nonatomic, assign) NSInteger outputType;
+
 @end
