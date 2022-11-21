@@ -7,7 +7,6 @@
 //
 
 #import <Cordova/CDVPlugin.h>
-#import "GMImagePickerController.h"
 
 @interface SOSPicker : CDVPlugin < UINavigationControllerDelegate, UIScrollViewDelegate>
 
