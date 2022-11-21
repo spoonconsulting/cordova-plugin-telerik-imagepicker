@@ -83,7 +83,7 @@ typedef enum : NSUInteger {
     picker.colsInPortrait = 4;
     picker.colsInLandscape = 6;
     picker.minimumInteritemSpacing = 2.0;
-    
+
     if(!disable_popover) {
         picker.modalPresentationStyle = UIModalPresentationPopover;
 
@@ -92,7 +92,7 @@ typedef enum : NSUInteger {
         popPC.sourceView = picker.view;
         //popPC.sourceRect = nil;
     }
-    
+
     [self.viewController showViewController:picker sender:nil];
 }
 
@@ -250,7 +250,7 @@ typedef enum : NSUInteger {
 
     [self.viewController dismissViewControllerAnimated:YES completion:nil];
     [self.commandDelegate sendPluginResult:result callbackId:self.callbackId];
-    
+
 }
 
 //Optional implementation:
