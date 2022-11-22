@@ -170,7 +170,7 @@ typedef enum : NSUInteger {
     NSArray* emptyArray = [NSArray array];
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:emptyArray];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
-    [presentationController.presentingViewController.self dismissViewControllerAnimated:YES completion:nil];
+    [presentationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
     NSLog(@"GMImagePicker: User swiped down to cancel");
 }
 
