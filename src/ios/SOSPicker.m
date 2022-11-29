@@ -19,7 +19,7 @@ typedef enum : NSUInteger {
     BASE64_STRING = 1
 } SOSPickerOutputType;
 
-@interface SOSPicker () <GMImagePickerControllerDelegate>
+@interface SOSPicker () <GMImagePickerControllerDelegate, UIAdaptivePresentationControllerDelegate>
 @end
 
 @implementation SOSPicker
@@ -76,6 +76,7 @@ typedef enum : NSUInteger {
 {
     GMImagePickerController *picker = [[GMImagePickerController alloc] init:allow_video];
     picker.delegate = self;
+    picker.presentationController.delegate = self;
     picker.maximumImagesCount = maximumImagesCount;
     picker.title = title;
     picker.customNavigationBarPrompt = message;
@@ -157,6 +158,20 @@ typedef enum : NSUInteger {
     [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
     [self.viewController dismissViewControllerAnimated:YES completion:nil];
     NSLog(@"UIImagePickerController: User pressed cancel button");
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerWillDismiss:(UIPresentationController *)presentationController {
+}
+
+- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController {
+    CDVPluginResult* pluginResult = nil;
+    NSArray* emptyArray = [NSArray array];
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:emptyArray];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    [presentationController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    NSLog(@"GMImagePicker: User swiped down to cancel");
 }
 
 #pragma mark - GMImagePickerControllerDelegate
