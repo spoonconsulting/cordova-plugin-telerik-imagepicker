@@ -1,3 +1,7 @@
+## [2.0.2](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.1...2.0.2) (2022-11-30)
+
+* **ios:** Fixed the camera swipe down bug by using presentationController.
+
 ## [2.0.1](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/1.0.2...2.0.1) (2021-05-18)
 
 * **android:** Added loader after images have been selected to avoid blank screen during transition from file explorer and app's current page
