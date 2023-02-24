@@ -99,6 +99,11 @@
             </feature>
         </config-file>
 
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+        </config-file>
+
         <framework src="com.android.support:appcompat-v7:27.1.1" />
 
         <source-file src="src/android/ImagePicker.java" target-dir="src/com/spoon/imagepicker" />
