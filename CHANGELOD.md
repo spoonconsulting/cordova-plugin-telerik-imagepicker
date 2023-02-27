@@ -1,3 +1,7 @@
+## [2.0.3](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.2...2.0.3) (2023-02-27)
+
+* **android:** Add READ_MEDIA_IMAGES permission for Android 13(Required in API 33).
+
 ## [2.0.2](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.1...2.0.2) (2022-11-30)
 
 * **ios:** Fixed the camera swipe down bug by using presentationController.
