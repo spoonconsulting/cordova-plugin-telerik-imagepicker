@@ -95,7 +95,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     }
     else
     {
-        if(UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation))
+        if(UIInterfaceOrientationIsLandscape([self getOrientation]))
         {
             screenHeight = CGRectGetWidth(picker.view.bounds);
             screenWidth = CGRectGetHeight(picker.view.bounds);
@@ -108,7 +108,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     }
     
     
-    UICollectionViewFlowLayout *layout = [self collectionViewFlowLayoutForOrientation:[UIApplication sharedApplication].statusBarOrientation];
+    UICollectionViewFlowLayout *layout = [self collectionViewFlowLayoutForOrientation:[self getOrientation]];
     if (self = [super initWithCollectionViewLayout:layout])
     {
         //Compute the thumbnail pixel size:
@@ -792,6 +792,15 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
         [assets addObject:asset];
     }
     return assets;
+}
+
+- (UIInterfaceOrientation) getOrientation {
+    if (@available(iOS 13.0, *)) {
+        UIWindowScene *activeWindow = (UIWindowScene *)[[[UIApplication sharedApplication] windows] firstObject];
+        return [activeWindow interfaceOrientation] ?: UIInterfaceOrientationPortrait;
+    } else {
+        return [[UIApplication sharedApplication] statusBarOrientation];
+    }
 }
 
 
