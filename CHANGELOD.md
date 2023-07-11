@@ -1,3 +1,7 @@
+## [2.0.4](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.3...2.0.4) (2023-07-11)
+
+* **ios:** Use interfaceOrientation for ios 13+.
+
 ## [2.0.3](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.2...2.0.3) (2023-02-27)
 
 * **android:** Add READ_MEDIA_IMAGES permission for Android 13(Required in API 33).
