@@ -1,4 +1,4 @@
-## [2.0.4](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.3...2.0.4) (2023-07-11)
+## [2.0.4](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.3...2.0.4) (2023-07-12)
 
 * **ios:** Use interfaceOrientation for ios 13+.
 
