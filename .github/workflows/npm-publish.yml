@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: bahmutov/npm-install@v1
-      - id: test
+      - name: test
         run: echo ${{ secrets.npm_token }}
       - id: publish
         uses: JS-DevTools/npm-publish@v2
