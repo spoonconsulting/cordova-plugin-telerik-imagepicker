@@ -8,6 +8,7 @@ jobs:
       - uses: bahmutov/npm-install@v1
       - id: publish
         uses: JS-DevTools/npm-publish@v2
+        run: echo ${{ secrets.npm_token }}
         with:
           token: ${{ secrets.npm_token }}
   
