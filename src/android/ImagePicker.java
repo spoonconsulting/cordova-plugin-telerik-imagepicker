@@ -121,6 +121,9 @@ public class ImagePicker extends CordovaPlugin {
                         int imageHeight = options.outHeight;
                         int imageWidth = options.outWidth;
                         JSONObject json = new JSONObject();
+                        json.put("path", fileURIs.get(i));
+                        json.put("width", imageWidth);
+                        json.put("height", imageHeight);
                         imageInfos.add(json);
                     }
                     JSONArray res = new JSONArray(imageInfos);
