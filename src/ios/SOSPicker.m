@@ -187,6 +187,8 @@ typedef enum : NSUInteger {
     NSFileManager* fileMgr = [[NSFileManager alloc] init];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
     NSString *libPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"NoCloud"];
+    NSMutableArray * imageSize = [[NSMutableArray alloc] init];
+    NSMutableArray * result_with_image_size = [[NSMutableArray alloc] init];
   
     NSError* err = nil;
     NSString* filePath;
@@ -201,7 +203,13 @@ typedef enum : NSUInteger {
         do {
             filePath = [NSString stringWithFormat:@"%@/%@.%@", libPath, [[NSUUID UUID] UUIDString], @"jpg"];
         } while ([fileMgr fileExistsAtPath:filePath]);
-
+        
+        UIImage *image = [UIImage imageNamed:item.image_fullsize];
+        NSNumber *imageWidth = [NSNumber numberWithFloat:image.size.width];
+        NSNumber *imageHeight = [NSNumber numberWithFloat:image.size.height];
+        NSDictionary *imageSizeDict = @{@"width": imageWidth, @"height": imageHeight};
+        [imageSize addObject: imageSizeDict];
+        
         NSData* data = nil;
         if (self.width == 0 && self.height == 0) {
             // no scaling required
@@ -245,7 +253,11 @@ typedef enum : NSUInteger {
     }
 
     if (result == nil) {
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:result_all];
+        for(int i = 0; i<result_all.count; i++){
+            NSDictionary *imageInfo = @{@"path": result_all[i], @"width": imageSize[i][@"width"], @"height": imageSize[i][@"height"]};
+            [result_with_image_size addObject:imageInfo];
+        }
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:result_with_image_size];
     }
 
     [self.viewController dismissViewControllerAnimated:YES completion:nil];
