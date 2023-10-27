@@ -113,7 +113,7 @@ public class ImagePicker extends CordovaPlugin {
                             }
                         }
                     }
-                    for (int i=0; i<fileURIs.size(); i++) {
+                    for (int i=0; i < fileURIs.size(); i++) {
                         BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inJustDecodeBounds = true;
                         Uri ImageUri = Uri.parse(fileURIs.get(i));

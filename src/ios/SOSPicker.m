@@ -182,13 +182,13 @@ typedef enum : NSUInteger {
 
     NSLog(@"GMImagePicker: User finished picking assets. Number of selected items is: %lu", (unsigned long)fetchArray.count);
 
-    NSMutableArray * result_all = [[NSMutableArray alloc] init];
+    NSMutableArray * resultList = [[NSMutableArray alloc] init];
     CGSize targetSize = CGSizeMake(self.width, self.height);
     NSFileManager* fileMgr = [[NSFileManager alloc] init];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
     NSString *libPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"NoCloud"];
-    NSMutableArray * imageSize = [[NSMutableArray alloc] init];
-    NSMutableArray * result_with_image_size = [[NSMutableArray alloc] init];
+    NSMutableArray *imageSize = [[NSMutableArray alloc] init];
+    NSMutableArray *result_with_image_size = [[NSMutableArray alloc] init];
   
     NSError* err = nil;
     NSString* filePath;
@@ -215,11 +215,11 @@ typedef enum : NSUInteger {
             // no scaling required
             if (self.outputType == BASE64_STRING){
                 UIImage* image = [UIImage imageNamed:item.image_fullsize];
-                [result_all addObject:[UIImageJPEGRepresentation(image, self.quality/100.0f) base64EncodedStringWithOptions:0]];
+                [resultList addObject:[UIImageJPEGRepresentation(image, self.quality/100.0f) base64EncodedStringWithOptions:0]];
             } else {
                 if (self.quality == 100) {
                     // no scaling, no downsampling, this is the fastest option
-                    [result_all addObject:item.image_fullsize];
+                    [resultList addObject:item.image_fullsize];
                    
                 } else {
                     // resample first
@@ -229,7 +229,7 @@ typedef enum : NSUInteger {
                         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:[err localizedDescription]];
                         break;
                     } else {
-                        [result_all addObject:[[NSURL fileURLWithPath:filePath] absoluteString]];
+                        [resultList addObject:[[NSURL fileURLWithPath:filePath] absoluteString]];
                     }
                 }
             }
@@ -244,17 +244,17 @@ typedef enum : NSUInteger {
                 break;
             } else {
                 if(self.outputType == BASE64_STRING){
-                    [result_all addObject:[data base64EncodedStringWithOptions:0]];
+                    [resultList addObject:[data base64EncodedStringWithOptions:0]];
                 } else {
-                    [result_all addObject:[[NSURL fileURLWithPath:filePath] absoluteString]];
+                    [resultList addObject:[[NSURL fileURLWithPath:filePath] absoluteString]];
                 }
             }
         }
     }
 
     if (result == nil) {
-        for(int i = 0; i<result_all.count; i++){
-            NSDictionary *imageInfo = @{@"path": result_all[i], @"width": imageSize[i][@"width"], @"height": imageSize[i][@"height"]};
+        for(int i = 0; i < resultList.count; i++) {
+            NSDictionary *imageInfo = @{@"path": resultList[i], @"width": imageSize[i][@"width"], @"height": imageSize[i][@"height"]};
             [result_with_image_size addObject:imageInfo];
         }
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:result_with_image_size];
