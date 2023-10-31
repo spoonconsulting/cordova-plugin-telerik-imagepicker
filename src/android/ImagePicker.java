@@ -118,12 +118,10 @@ public class ImagePicker extends CordovaPlugin {
                         options.inJustDecodeBounds = true;
                         Uri ImageUri = Uri.parse(fileURIs.get(i));
                         BitmapFactory.decodeFile(new File(ImageUri.getPath()).getAbsolutePath(), options);
-                        int imageHeight = options.outHeight;
-                        int imageWidth = options.outWidth;
                         JSONObject json = new JSONObject();
                         json.put("path", fileURIs.get(i));
-                        json.put("width", imageWidth);
-                        json.put("height", imageHeight);
+                        json.put("width", options.outWidth);
+                        json.put("height", options.outHeight);
                         imageInfos.add(json);
                     }
                     JSONArray res = new JSONArray(imageInfos);

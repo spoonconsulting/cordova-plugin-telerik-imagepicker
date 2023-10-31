@@ -187,8 +187,6 @@ typedef enum : NSUInteger {
     NSFileManager* fileMgr = [[NSFileManager alloc] init];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
     NSString *libPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"NoCloud"];
-    NSMutableArray *imageSize = [[NSMutableArray alloc] init];
-    NSMutableArray *result_with_image_size = [[NSMutableArray alloc] init];
   
     NSError* err = nil;
     NSString* filePath;
@@ -204,22 +202,19 @@ typedef enum : NSUInteger {
             filePath = [NSString stringWithFormat:@"%@/%@.%@", libPath, [[NSUUID UUID] UUIDString], @"jpg"];
         } while ([fileMgr fileExistsAtPath:filePath]);
         
-        UIImage *image = [UIImage imageNamed:item.image_fullsize];
-        NSNumber *imageWidth = [NSNumber numberWithFloat:image.size.width];
-        NSNumber *imageHeight = [NSNumber numberWithFloat:image.size.height];
-        NSDictionary *imageSizeDict = @{@"width": imageWidth, @"height": imageHeight};
-        [imageSize addObject: imageSizeDict];
-        
         NSData* data = nil;
         if (self.width == 0 && self.height == 0) {
             // no scaling required
             if (self.outputType == BASE64_STRING){
                 UIImage* image = [UIImage imageNamed:item.image_fullsize];
-                [resultList addObject:[UIImageJPEGRepresentation(image, self.quality/100.0f) base64EncodedStringWithOptions:0]];
+                NSDictionary *imageInfo = @{@"path":[UIImageJPEGRepresentation(image, self.quality/100.0f) base64EncodedStringWithOptions:0], @"width": [NSNumber numberWithFloat:image.size.width], @"height": [NSNumber numberWithFloat:image.size.height]};
+                [resultList addObject: imageInfo];
             } else {
                 if (self.quality == 100) {
                     // no scaling, no downsampling, this is the fastest option
-                    [resultList addObject:item.image_fullsize];
+                    UIImage* image = [UIImage imageNamed:item.image_fullsize];
+                    NSDictionary *imageInfo = @{@"path":item.image_fullsize, @"width": [NSNumber numberWithFloat:image.size.width], @"height": [NSNumber numberWithFloat:image.size.height]};
+                    [resultList addObject: imageInfo];
                    
                 } else {
                     // resample first
@@ -229,7 +224,8 @@ typedef enum : NSUInteger {
                         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:[err localizedDescription]];
                         break;
                     } else {
-                        [resultList addObject:[[NSURL fileURLWithPath:filePath] absoluteString]];
+                        NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString], @"width": [NSNumber numberWithFloat:image.size.width], @"height": [NSNumber numberWithFloat:image.size.height]};
+                        [resultList addObject: imageInfo];
                     }
                 }
             }
@@ -244,20 +240,18 @@ typedef enum : NSUInteger {
                 break;
             } else {
                 if(self.outputType == BASE64_STRING){
-                    [resultList addObject:[data base64EncodedStringWithOptions:0]];
+                    NSDictionary *imageInfo = @{@"path":[data base64EncodedStringWithOptions:0], @"width": [NSNumber numberWithFloat:scaledImage.size.width], @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
+                    [resultList addObject: imageInfo];
                 } else {
-                    [resultList addObject:[[NSURL fileURLWithPath:filePath] absoluteString]];
+                    NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString], @"width": [NSNumber numberWithFloat:scaledImage.size.width], @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
+                    [resultList addObject: imageInfo];
                 }
             }
         }
     }
 
     if (result == nil) {
-        for(int i = 0; i < resultList.count; i++) {
-            NSDictionary *imageInfo = @{@"path": resultList[i], @"width": imageSize[i][@"width"], @"height": imageSize[i][@"height"]};
-            [result_with_image_size addObject:imageInfo];
-        }
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:result_with_image_size];
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:resultList];
     }
 
     [self.viewController dismissViewControllerAnimated:YES completion:nil];
