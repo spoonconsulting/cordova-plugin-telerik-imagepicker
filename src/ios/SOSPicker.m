@@ -207,13 +207,17 @@ typedef enum : NSUInteger {
             // no scaling required
             if (self.outputType == BASE64_STRING){
                 UIImage* image = [UIImage imageNamed:item.image_fullsize];
-                NSDictionary *imageInfo = @{@"path":[UIImageJPEGRepresentation(image, self.quality/100.0f) base64EncodedStringWithOptions:0], @"width": [NSNumber numberWithFloat:image.size.width], @"height": [NSNumber numberWithFloat:image.size.height]};
+                NSDictionary *imageInfo = @{@"path":[UIImageJPEGRepresentation(image, self.quality/100.0f) base64EncodedStringWithOptions:0], 
+                                            @"width": [NSNumber numberWithFloat:image.size.width],
+                                            @"height": [NSNumber numberWithFloat:image.size.height]};
                 [resultList addObject: imageInfo];
             } else {
                 if (self.quality == 100) {
                     // no scaling, no downsampling, this is the fastest option
                     UIImage* image = [UIImage imageNamed:item.image_fullsize];
-                    NSDictionary *imageInfo = @{@"path":item.image_fullsize, @"width": [NSNumber numberWithFloat:image.size.width], @"height": [NSNumber numberWithFloat:image.size.height]};
+                    NSDictionary *imageInfo = @{@"path":item.image_fullsize, 
+                                                @"width": [NSNumber numberWithFloat:image.size.width], 
+                                                @"height": [NSNumber numberWithFloat:image.size.height]};
                     [resultList addObject: imageInfo];
                    
                 } else {
@@ -224,7 +228,9 @@ typedef enum : NSUInteger {
                         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:[err localizedDescription]];
                         break;
                     } else {
-                        NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString], @"width": [NSNumber numberWithFloat:image.size.width], @"height": [NSNumber numberWithFloat:image.size.height]};
+                        NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString], 
+                                                    @"width": [NSNumber numberWithFloat:image.size.width], 
+                                                    @"height": [NSNumber numberWithFloat:image.size.height]};
                         [resultList addObject: imageInfo];
                     }
                 }
@@ -240,10 +246,14 @@ typedef enum : NSUInteger {
                 break;
             } else {
                 if(self.outputType == BASE64_STRING){
-                    NSDictionary *imageInfo = @{@"path":[data base64EncodedStringWithOptions:0], @"width": [NSNumber numberWithFloat:scaledImage.size.width], @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
+                    NSDictionary *imageInfo = @{@"path":[data base64EncodedStringWithOptions:0], 
+                                                @"width": [NSNumber numberWithFloat:scaledImage.size.width], 
+                                                @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
                     [resultList addObject: imageInfo];
                 } else {
-                    NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString], @"width": [NSNumber numberWithFloat:scaledImage.size.width], @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
+                    NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString], 
+                                                @"width": [NSNumber numberWithFloat:scaledImage.size.width], 
+                                                @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
                     [resultList addObject: imageInfo];
                 }
             }
