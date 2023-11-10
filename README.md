@@ -42,7 +42,7 @@ Example - Get at most 10 images scaled to width of 800:
 window.imagePicker.getPictures(
     function(results) {
         for (var i = 0; i < results.length; i++) {
-            console.log('Image URI: ' + results[i]);
+            console.log('Image URI: ' + results[i].path);
             console.log('Image Height: ' + results[i].height);
             console.log('Image Width: ' + results[i].width);
         }
