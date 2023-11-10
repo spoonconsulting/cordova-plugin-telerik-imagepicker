@@ -1,3 +1,8 @@
+## [2.0.5](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.4...2.0.5) (2023-11-10)
+
+* **android:** Return the Height and Width of selected images along with their paths.
+* **ios:** Return the Height and Width of selected images along with their paths.
+
 ## [2.0.4](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.3...2.0.4) (2023-07-12)
 
 * **ios:** Use interfaceOrientation for ios 13+.

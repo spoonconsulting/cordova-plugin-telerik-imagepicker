@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -76,6 +77,7 @@ public class ImagePicker extends CordovaPlugin {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
+        ArrayList<JSONObject> imageInfos = new ArrayList<>();
         executor.execute(() -> {
             try {
                 cordova.getActivity().runOnUiThread(() -> {
@@ -111,7 +113,18 @@ public class ImagePicker extends CordovaPlugin {
                             }
                         }
                     }
-                    JSONArray res = new JSONArray(fileURIs);
+                    for (int i=0; i < fileURIs.size(); i++) {
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inJustDecodeBounds = true;
+                        Uri ImageUri = Uri.parse(fileURIs.get(i));
+                        BitmapFactory.decodeFile(new File(ImageUri.getPath()).getAbsolutePath(), options);
+                        JSONObject json = new JSONObject();
+                        json.put("path", fileURIs.get(i));
+                        json.put("width", options.outWidth);
+                        json.put("height", options.outHeight);
+                        imageInfos.add(json);
+                    }
+                    JSONArray res = new JSONArray(imageInfos);
                     callbackContext.success(res);
                 } else if (resultCode == Activity.RESULT_CANCELED && data != null) {
                     String error = data.getStringExtra("ERRORMESSAGE");
