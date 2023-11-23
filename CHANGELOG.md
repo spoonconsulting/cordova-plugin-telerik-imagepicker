@@ -1,3 +1,11 @@
+## [2.1.0](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.5...2.1.0) (2023-11-23)
+
+
+### Breaking Changes
+
+* **android:** Return the Height and Width of selected images along with their paths.
+* **ios:** Return the Height and Width of selected images along with their paths.
+
 ## [2.0.5](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.4...2.0.5) (2023-11-10)
 
 * **android:** Return the Height and Width of selected images along with their paths.
