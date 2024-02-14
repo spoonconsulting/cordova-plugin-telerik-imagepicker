@@ -69,19 +69,10 @@ public class ImagePicker extends CordovaPlugin {
             final JSONObject params = args.getJSONObject(0);
             this.maxImageCount = params.has("maximumImagesCount") ? params.getInt("maximumImagesCount") : 20;
 
-            ActivityResultLauncher<PickVisualMediaRequest> pickMultipleMedia =
-                    cordova.getActivity().registerForActivityResult(new ActivityResultContracts.PickMultipleVisualMedia(5), uris -> {
-                        // Callback is invoked after the user selects media items or closes the
-                        // photo picker.
-                        if (!uris.isEmpty()) {
-                            Log.d("PhotoPicker", "Number of items selected: " + uris.size());
-                        } else {
-                            Log.d("PhotoPicker", "No media selected");
-                        }
-                    });
-            pickMultipleMedia.launch(new PickVisualMediaRequest.Builder()
-                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageAndVideo.INSTANCE)
-                    .build());
+            PickVisualMediaRequest pickVisualMediaRequest = new PickVisualMediaRequest();
+            Intent imagePickerIntent = new ActivityResultContracts.PickMultipleVisualMedia().createIntent(cordova.getContext(), pickVisualMediaRequest);
+            imagePickerIntent.setType("image/*");
+            cordova.startActivityForResult(this, imagePickerIntent, SELECT_PICTURE);
             this.showMaxLimitWarning();
             return true;
         }

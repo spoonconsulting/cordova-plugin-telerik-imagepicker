@@ -96,7 +96,6 @@
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="ImagePicker">
                 <param name="android-package" value="com.spoon.imagepicker.ImagePicker"/>
-                <param name="onload" value="true" />
             </feature>
         </config-file>
 
@@ -107,9 +106,7 @@
 
         <framework src="com.android.support:appcompat-v7:27.1.1" />
         <framework src="androidx.activity:activity:1.7.+" />
-        <framework src="androidx.fragment:fragment:1.6.2" />
 
         <source-file src="src/android/ImagePicker.java" target-dir="src/com/spoon/imagepicker" />
-        <source-file src="src/android/ImagePickerFragment.java" target-dir="src/com/spoon/imagepicker" />
     </platform>
 </plugin>
