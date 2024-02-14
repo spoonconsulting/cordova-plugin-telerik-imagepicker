@@ -70,8 +70,8 @@ public class ImagePicker extends CordovaPlugin {
             this.maxImageCount = params.has("maximumImagesCount") ? params.getInt("maximumImagesCount") : 20;
 
             PickVisualMediaRequest pickVisualMediaRequest = new PickVisualMediaRequest();
+            pickVisualMediaRequest.setMediaType$activity_release(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE);
             Intent imagePickerIntent = new ActivityResultContracts.PickMultipleVisualMedia().createIntent(cordova.getContext(), pickVisualMediaRequest);
-            imagePickerIntent.setType("image/*");
             cordova.startActivityForResult(this, imagePickerIntent, SELECT_PICTURE);
             this.showMaxLimitWarning();
             return true;
