@@ -106,6 +106,7 @@
 
         <framework src="com.android.support:appcompat-v7:27.1.1" />
         <framework src="androidx.activity:activity:1.7.+" />
+        <framework src="org.jetbrains.kotlin:kotlin-stdlib:1.8.10" />
 
         <source-file src="src/android/ImagePicker.java" target-dir="src/com/spoon/imagepicker" />
     </platform>
