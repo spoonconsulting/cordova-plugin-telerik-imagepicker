@@ -32,6 +32,10 @@ ImagePicker.prototype.requestReadPermission = function(callback, failureCallback
   return cordova.exec(callback, failureCallback, "ImagePicker", "requestReadPermission", []);
 };
 
+ImagePicker.prototype.forceClose = function(callback) {
+  return cordova.exec(callback, null, "ImagePicker", "closeImagePicker", []);
+};
+
 /*
 *	success - success callback
 *	fail - error callback

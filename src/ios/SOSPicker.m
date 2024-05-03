@@ -83,6 +83,7 @@ typedef enum : NSUInteger {
     picker.colsInPortrait = 4;
     picker.colsInLandscape = 6;
     picker.minimumInteritemSpacing = 2.0;
+    self.imagePicker = picker;
 
     if(!disable_popover) {
         picker.modalPresentationStyle = UIModalPresentationPopover;
@@ -278,6 +279,14 @@ typedef enum : NSUInteger {
    [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
    [picker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
    NSLog(@"GMImagePicker: User pressed cancel button");
+}
+
+- (void) closeImagePicker:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult* pluginResult = nil;
+    NSArray* emptyArray = [NSArray array];
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:emptyArray];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    [_imagePicker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 
