@@ -286,7 +286,7 @@ typedef enum : NSUInteger {
     NSArray* emptyArray = [NSArray array];
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:emptyArray];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    [_imagePicker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    [self.imagePicker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 
