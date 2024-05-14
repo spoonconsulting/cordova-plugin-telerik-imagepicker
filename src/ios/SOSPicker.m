@@ -282,12 +282,13 @@ typedef enum : NSUInteger {
 }
 
 - (void) closeImagePicker:(CDVInvokedUrlCommand *)command {
+  if (self.imagePicker.presentingViewController) {
     CDVPluginResult* pluginResult = nil;
     NSArray* emptyArray = [NSArray array];
     pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:emptyArray];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     [self.imagePicker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+  }
 }
-
 
 @end
