@@ -1,3 +1,7 @@
+## [2.1.1](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.5...2.1.1) (2024-05-21)
+
+* **ios:** Added a method `closeImagePicker` to close the image picker on ios devices.
+
 ## [2.1.0](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.0.5...2.1.0) (2023-11-23)
 
 
