@@ -83,7 +83,6 @@ typedef enum : NSUInteger {
     picker.colsInPortrait = 4;
     picker.colsInLandscape = 6;
     picker.minimumInteritemSpacing = 2.0;
-    self.imagePicker = picker;
 
     if(!disable_popover) {
         picker.modalPresentationStyle = UIModalPresentationPopover;
@@ -283,8 +282,8 @@ typedef enum : NSUInteger {
 
 - (void) closeImagePicker:(CDVInvokedUrlCommand *)command {
     bool boolMessage = FALSE;
-    if (self.imagePicker && self.imagePicker.presentingViewController) {
-      [self.imagePicker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    if (self.viewController != nil) {
+      [self.viewController dismissViewControllerAnimated:YES completion:nil];
       boolMessage = TRUE;
     }
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:boolMessage];
