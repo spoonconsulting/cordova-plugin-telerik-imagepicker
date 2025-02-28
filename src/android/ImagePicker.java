@@ -295,7 +295,7 @@ public class ImagePicker extends CordovaPlugin {
     private void showMaxLimitWarning(int deviceMaxLimit) {
         String toastMsg = "The maximumImagesCount:" + this.maxImageCount +
                 " is greater than the device's max limit of images that can be selected from the MediaStore: " + deviceMaxLimit +
-                ". Maximum number of images that can be selected is:" + deviceMaxLimit;
+                ". Maximum number of images that can be selected is: " + deviceMaxLimit;
 
         (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
     }
