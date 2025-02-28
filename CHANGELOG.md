@@ -1,3 +1,7 @@
+## [2.2.0](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.1.1...2.2.0) (2025-02-28)
+
+* **Android:** Now using the recommended image picker by Android (PickVisualMedia) instead of file picker. However an option to revert to file picker has been added: `useFilePicker: true`
+
 ## [2.1.2](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.1.1...2.1.2) (2024-05-27)
 
 * **ios:** Bug Fix.
