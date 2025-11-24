@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ext.SdkExtensions;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
@@ -23,6 +24,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 
 import org.apache.cordova.CallbackContext;
@@ -64,12 +67,28 @@ public class ImagePicker extends CordovaPlugin {
         } else if (ACTION_GET_PICTURES.equals(action)) {
             final JSONObject params = args.getJSONObject(0);
             this.maxImageCount = params.has("maximumImagesCount") ? params.getInt("maximumImagesCount") : 20;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 2) {
+                int deviceMaxLimit = MediaStore.getPickImagesMaxLimit();
+               if (this.maxImageCount > deviceMaxLimit) {
+                   this.maxImageCount = deviceMaxLimit;
+                   this.showMaxLimitWarning(deviceMaxLimit);
+               };
+            }
 
-            Intent imagePickerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            imagePickerIntent.setType("image/*");
-            imagePickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            boolean useFilePicker = params.has("useFilePicker") && params.getBoolean("useFilePicker");
+
+            Intent imagePickerIntent = null;
+            if (useFilePicker) {
+                imagePickerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                imagePickerIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+                imagePickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            } else {
+                PickVisualMediaRequest pickVisualMediaRequest = new PickVisualMediaRequest.Builder().setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build();
+                imagePickerIntent = new ActivityResultContracts.PickMultipleVisualMedia(maxImageCount).createIntent(cordova.getContext(), pickVisualMediaRequest);
+            }
+
             cordova.startActivityForResult(this, imagePickerIntent, SELECT_PICTURE);
-            this.showMaxLimitWarning();
+            this.showMaxLimitWarning(useFilePicker);
             return true;
         }
         return false;
@@ -266,8 +285,18 @@ public class ImagePicker extends CordovaPlugin {
         return output.getPath();
     }
 
-    private void showMaxLimitWarning() {
-        String toastMsg = "Only the first " + this.maxImageCount + " images selected will be taken.";
+    private void showMaxLimitWarning(boolean useFilePicker) {
+        String toastMsg = "You can only select up to " + this.maxImageCount + " image(s)";
+        if (useFilePicker) {
+            toastMsg = "Only the first " + this.maxImageCount + " image(s) selected will be taken.";
+        }
+        (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
+    }
+    private void showMaxLimitWarning(int deviceMaxLimit) {
+        String toastMsg = "The maximumImagesCount:" + this.maxImageCount +
+                " is greater than the device's max limit of images that can be selected from the MediaStore: " + deviceMaxLimit +
+                ". Maximum number of images that can be selected is: " + deviceMaxLimit;
+
         (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
     }
 }

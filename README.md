@@ -77,12 +77,18 @@ window.imagePicker.getPictures(
         // available options are 
         // window.imagePicker.OutputType.FILE_URI (0) or 
         // window.imagePicker.OutputType.BASE64_STRING (1)
-        outputType: int
+        outputType: int,
+
+        // option to revert to file picker on android
+        useFilePicker: boolean
+        
     };
     
 ### Note for Android Use
 
 The 'maximumImagesCount' option is currently the only option supported for Android
+
+The `useFilePicker` option is only used for Android as prior to the current version the file picker was being used.
 
 ## Android 6 (M) Permissions
 On Android 6 you need to request permission to read external storage at runtime when targeting API level 23+.
