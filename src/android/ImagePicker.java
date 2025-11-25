@@ -32,7 +32,6 @@ import android.widget.Toast;
 
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.camera.core.ResolutionInfo;
 import androidx.core.content.ContextCompat;
 
 import org.apache.cordova.CallbackContext;
