@@ -12,6 +12,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.media.MediaMetadataRetriever;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,6 +44,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -362,8 +365,37 @@ public class ImagePicker extends CordovaPlugin {
         String filename = "video_thumb_" + UUID.randomUUID().toString() + ".jpg";
         File thumbnail = new File(cordova.getContext().getFilesDir(), filename);
         Bitmap bitmap = null;
+        Size size = null;
 
-        bitmap = generateColoredBitmap(new Size(500, 500), Color.DKGRAY);
+        try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
+            retriever.setDataSource(String.valueOf(videoFile));
+
+            String widthStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            String heightStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+
+            if (widthStr != null && heightStr != null) {
+                int videoWidth = Integer.parseInt(widthStr);
+                int videoHeight = Integer.parseInt(heightStr);
+                size = new Size(videoWidth, videoHeight);
+            }
+            try {
+                retriever.release();
+            } catch (IOException e) {
+                Log.e("ImagePicker", "generateVideoThumbnail: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            Log.e("ImagePicker", "generateVideoThumbnail: " + e.getMessage());
+        }
+
+        if (size == null) {
+            size = new Size(500, 500);
+        }
+
+        try {
+            bitmap = ThumbnailUtils.createVideoThumbnail(videoFile, size, null);
+        } catch (IOException e) {
+            bitmap = generateColoredBitmap(size, Color.DKGRAY);
+        }
         try (FileOutputStream out = new FileOutputStream(thumbnail)) {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
             out.flush();
