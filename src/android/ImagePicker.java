@@ -23,6 +23,7 @@ import android.util.Size;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.MimeTypeMap;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -60,7 +61,7 @@ public class ImagePicker extends CordovaPlugin {
 
     private CallbackContext callbackContext;
     private int maxImageCount;
-    private double maxFileSize;
+    private int maxFileSize;
     private LinearLayout layout = null;
 
     public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -74,7 +75,7 @@ public class ImagePicker extends CordovaPlugin {
         } else if (ACTION_GET_PICTURES.equals(action)) {
             final JSONObject params = args.getJSONObject(0);
             this.maxImageCount = params.has("maximumImagesCount") ? params.getInt("maximumImagesCount") : 20;
-            this.maxFileSize = params.has("maxFileSize") ? params.getDouble("maxFileSize") : 50;
+            this.maxFileSize = params.has("maxFileSize") ? params.getInt("maxFileSize") : 50;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 2) {
                 int deviceMaxLimit = MediaStore.getPickImagesMaxLimit();
                if (this.maxImageCount > deviceMaxLimit) {
@@ -163,19 +164,22 @@ public class ImagePicker extends CordovaPlugin {
                         }
                     }
                     for (int i=0; i < fileURIs.size(); i++) {
+                        String fileUri = fileURIs.get(i);
+                        boolean isVideo = this.isVideo(fileUri);
                         BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inJustDecodeBounds = true;
-                        Uri ImageUri = Uri.parse(fileURIs.get(i));
-                        Log.d("hashir", "uri: " + fileURIs.get(i));
-                        File videoFile = new File(
-                                cordova.getContext().getFilesDir(),
-                                fileURIs.get(i)
-                        );
+                        Uri ImageUri = Uri.parse(fileUri);
                         BitmapFactory.decodeFile(new File(ImageUri.getPath()).getAbsolutePath(), options);
                         JSONObject json = new JSONObject();
-                        json.put("path", fileURIs.get(i));
+                        json.put("path", fileUri);
+                        json.put("isVideo", isVideo);
                         json.put("width", options.outWidth);
                         json.put("height", options.outHeight);
+                        if (isVideo) {
+                            File videoFile = new File(fileUri);
+                            String videoThumbnail = this.generateVideoThumbnail(videoFile);
+                            json.put("thumbnail", videoThumbnail);
+                        }
                         imageInfos.add(json);
                     }
                     JSONArray res = new JSONArray(imageInfos);
@@ -242,8 +246,11 @@ public class ImagePicker extends CordovaPlugin {
         this.callbackContext = callbackContext;
     }
 
-    public boolean isVideo(Uri uri) {
-        String mime = cordova.getContext().getContentResolver().getType(uri);
+    public boolean isVideo(String filePath) {
+        String extension = MimeTypeMap.getFileExtensionFromUrl(filePath);
+        String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                extension != null ? extension.toLowerCase() : null
+        );
         return mime != null && mime.startsWith("video/");
     }
 
