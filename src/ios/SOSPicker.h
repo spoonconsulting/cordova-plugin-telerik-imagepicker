@@ -25,5 +25,6 @@
 @property (nonatomic, assign) NSInteger height;
 @property (nonatomic, assign) NSInteger quality;
 @property (nonatomic, assign) NSInteger outputType;
+@property (nonatomic, assign) NSInteger maxMB;
 
 @end

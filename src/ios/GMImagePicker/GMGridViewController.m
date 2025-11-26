@@ -82,6 +82,12 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 @synthesize dic_asset_fetches;
 
+- (void)setAssetsFetchResults:(PHFetchResult *)assetsFetchResults
+{
+    _assetsFetchResults = assetsFetchResults;
+    [self filterAssets];
+}
+
 -(id)initWithPicker:(GMImagePickerController *)picker
 {
     //Custom init. The picker contains custom information to create the FlowLayout
@@ -147,6 +153,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     }
     
     self.imageManager = [[PHCachingImageManager alloc] init];
+    [self filterAssets];
     [self resetCachedAssets];
     [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
     
@@ -220,6 +227,34 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 - (void)setupViews
 {
     self.collectionView.backgroundColor = [UIColor whiteColor];
+}
+
+- (void)filterAssets
+{
+    if (!self.assetsFetchResults) {
+        self.filteredAssets = @[];
+        return;
+    }
+    
+    NSMutableArray *filtered = [NSMutableArray array];
+    
+    // Check if delegate implements shouldShowAsset method
+    BOOL implementsFilter = [self.picker.delegate respondsToSelector:@selector(assetsPickerController:shouldShowAsset:)];
+    
+    for (NSInteger i = 0; i < self.assetsFetchResults.count; i++) {
+        PHAsset *asset = self.assetsFetchResults[i];
+        
+        if (implementsFilter) {
+            if ([self.picker.delegate assetsPickerController:self.picker shouldShowAsset:asset]) {
+                [filtered addObject:asset];
+            }
+        } else {
+            // If delegate doesn't implement the method, show all assets
+            [filtered addObject:asset];
+        }
+    }
+    
+    self.filteredAssets = [filtered copy];
 }
 
 - (void)setupButtons
@@ -310,7 +345,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     NSInteger currentTag = cell.tag + 1;
     cell.tag = currentTag;
     
-    PHAsset *asset = self.assetsFetchResults[indexPath.item];
+    PHAsset *asset = self.filteredAssets[indexPath.item];
     [cell bind:asset];
     
     //GMFetchItem * fetch_item = [dic_asset_fetches objectForKey:[NSNumber numberWithLong:indexPath.item] ];
@@ -438,7 +473,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
         return NO;
     }
     
-    PHAsset *asset = self.assetsFetchResults[indexPath.item];
+    PHAsset *asset = self.filteredAssets[indexPath.item];
     //GMFetchItem * fetch_item = [dic_asset_fetches objectForKey:[ NSNumber numberWithLong:indexPath.item ]];
     GMFetchItem * fetch_item = [dic_asset_fetches objectForKey:asset];
     
@@ -580,7 +615,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    PHAsset *asset = self.assetsFetchResults[indexPath.item];
+    PHAsset *asset = self.filteredAssets[indexPath.item];
     //GMFetchItem * fetch_item = [dic_asset_fetches objectForKey:[ NSNumber numberWithLong:indexPath.item ]];
     GMFetchItem * fetch_item = [dic_asset_fetches objectForKey:asset];
     
@@ -593,7 +628,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldDeselectItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    PHAsset *asset = self.assetsFetchResults[indexPath.item];
+    PHAsset *asset = self.filteredAssets[indexPath.item];
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:shouldDeselectAsset:)])
         return [self.picker.delegate assetsPickerController:self.picker shouldDeselectAsset:asset];
@@ -603,7 +638,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (void)collectionView:(UICollectionView *)collectionView didDeselectItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    PHAsset *asset = self.assetsFetchResults[indexPath.item];
+    PHAsset *asset = self.filteredAssets[indexPath.item];
     //GMFetchItem * fetch_item = [dic_asset_fetches objectForKey:[ NSNumber numberWithLong:indexPath.item ]];
     GMFetchItem * fetch_item = [dic_asset_fetches objectForKey:asset];
     
@@ -616,7 +651,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    PHAsset *asset = self.assetsFetchResults[indexPath.item];
+    PHAsset *asset = self.filteredAssets[indexPath.item];
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:shouldHighlightAsset:)])
         return [self.picker.delegate assetsPickerController:self.picker shouldHighlightAsset:asset];
@@ -626,7 +661,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (void)collectionView:(UICollectionView *)collectionView didHighlightItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    PHAsset *asset = self.assetsFetchResults[indexPath.item];
+    PHAsset *asset = self.filteredAssets[indexPath.item];
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:didHighlightAsset:)])
         [self.picker.delegate assetsPickerController:self.picker didHighlightAsset:asset];
@@ -634,7 +669,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (void)collectionView:(UICollectionView *)collectionView didUnhighlightItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    PHAsset *asset = self.assetsFetchResults[indexPath.item];
+    PHAsset *asset = self.filteredAssets[indexPath.item];
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:didUnhighlightAsset:)])
         [self.picker.delegate assetsPickerController:self.picker didUnhighlightAsset:asset];
@@ -646,7 +681,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    NSInteger count = self.assetsFetchResults.count;
+    NSInteger count = self.filteredAssets.count;
     return count;
 }
 
@@ -664,6 +699,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
             
             // get the new fetch result
             self.assetsFetchResults = [collectionChanges fetchResultAfterChanges];
+            [self filterAssets];
             
             //NSLog( @"reset all" );
             
@@ -788,7 +824,7 @@ NSString * const GMGridViewCellIdentifier = @"GMGridViewCellIdentifier";
     
     NSMutableArray *assets = [NSMutableArray arrayWithCapacity:indexPaths.count];
     for (NSIndexPath *indexPath in indexPaths) {
-        PHAsset *asset = self.assetsFetchResults[indexPath.item];
+        PHAsset *asset = self.filteredAssets[indexPath.item];
         [assets addObject:asset];
     }
     return assets;

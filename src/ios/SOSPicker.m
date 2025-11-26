@@ -7,6 +7,8 @@
 //
 
 #import "SOSPicker.h"
+#import <Photos/Photos.h>
+#import <AVFoundation/AVFoundation.h>
 #import "GMImagePickerController.h"
 #import "GMFetchItem.h"
 
@@ -65,6 +67,7 @@ typedef enum : NSUInteger {
     self.width = [[options objectForKey:@"width"] integerValue];
     self.height = [[options objectForKey:@"height"] integerValue];
     self.quality = [[options objectForKey:@"quality"] integerValue];
+    self.maxMB = [[options objectForKey:@"maxFileSize"] integerValue];
 
     self.callbackId = command.callbackId;
     [self launchGMImagePicker:allow_video title:title message:message disable_popover:disable_popover maximumImagesCount:maximumImagesCount];
@@ -433,6 +436,44 @@ typedef enum : NSUInteger {
     }
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:boolMessage];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+#pragma mark - GMImagePickerControllerDelegate - Asset Filtering
+
+- (BOOL)assetsPickerController:(GMImagePickerController *)picker shouldShowAsset:(PHAsset *)asset {
+    if (asset.mediaType != PHAssetMediaTypeVideo) {
+        return YES;
+    }
+
+    NSArray *resources = [PHAssetResource assetResourcesForAsset:asset];
+    long long fileSize = 0;
+    
+    for (PHAssetResource *resource in resources) {
+        if (resource.type == PHAssetResourceTypeVideo ||
+            resource.type == PHAssetResourceTypeFullSizeVideo ||
+            resource.type == PHAssetResourceTypePairedVideo) {
+            
+            @try {
+                id fileSizeValue = [resource valueForKey:@"fileSize"];
+                if ([fileSizeValue isKindOfClass:[NSNumber class]]) {
+                    fileSize = [fileSizeValue longLongValue];
+                    break;
+                }
+            } @catch (NSException *exception) {
+                // Continue to next resource if fileSize is not available
+            }
+        }
+    }
+    
+    if (fileSize > 0) {
+        CGFloat mb = fileSize / (1024.0 * 1024.0);
+        
+        if (mb > self.maxMB) {
+            return NO;
+        }
+        return YES;
+    }
+    return YES;
 }
 
 @end
