@@ -192,16 +192,58 @@ typedef enum : NSUInteger {
     NSString* filePath;
     CDVPluginResult* result = nil;
 
-    for (GMFetchItem *item in fetchArray) {
+    NSArray *phAssets = picker.selectedAssets;
+
+    for (NSInteger i = 0; i < fetchArray.count; i++) {
+        GMFetchItem *item = fetchArray[i];
+        PHAsset *phAsset = (i < phAssets.count) ? phAssets[i] : nil;
 
         if ( !item.image_fullsize ) {
             continue;
         }
-
+     
+        BOOL isVideo = NO;
+        if (phAsset && phAsset.mediaType == PHAssetMediaTypeVideo) {
+            isVideo = YES;
+        }
+    
+        NSString *fileExtension = isVideo ? @"mp4" : @"jpg";
         do {
-            filePath = [NSString stringWithFormat:@"%@/%@.%@", libPath, [[NSUUID UUID] UUIDString], @"jpg"];
+            filePath = [NSString stringWithFormat:@"%@/%@.%@", libPath, [[NSUUID UUID] UUIDString], fileExtension];
         } while ([fileMgr fileExistsAtPath:filePath]);
         
+        if (isVideo && phAsset) {
+            dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+            __block BOOL exportSuccess = NO;
+            __block NSError *exportError = nil;
+            
+            [self exportVideoFromPHAsset:phAsset toPath:filePath completion:^(BOOL success, NSError *error) {
+                exportSuccess = success;
+                exportError = error;
+                dispatch_semaphore_signal(semaphore);
+            }];
+            
+            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 5 * 60 * NSEC_PER_SEC);
+            if (dispatch_semaphore_wait(semaphore, timeout) != 0) {
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:@"Video export timeout"];
+                break;
+            }
+            
+            if (exportSuccess) {
+                CGSize videoSize = [self getVideoDimensionsAtPath:filePath];
+                NSDictionary *videoInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString],
+                                            @"isVideo": @(YES),
+                                            @"width": [NSNumber numberWithFloat:videoSize.width],
+                                            @"height": [NSNumber numberWithFloat:videoSize.height]};
+                [resultList addObject: videoInfo];
+            } else {
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:exportError ? exportError.localizedDescription : @"Video export failed"];
+                break;
+            }
+            continue;
+        }
+        
+        // Handle images
         NSData* data = nil;
         if (self.width == 0 && self.height == 0) {
             // no scaling required
@@ -269,6 +311,65 @@ typedef enum : NSUInteger {
 
 }
 
+- (CGSize)getVideoDimensionsAtPath:(NSString *)path {
+    AVAsset *asset = [AVAsset assetWithURL:[NSURL fileURLWithPath:path]];
+    NSArray *tracks = [asset tracksWithMediaType:AVMediaTypeVideo];
+    if ([tracks count] > 0) {
+        AVAssetTrack *videoTrack = [tracks objectAtIndex:0];
+        CGSize size = videoTrack.naturalSize;
+        return size;
+    }
+    return CGSizeMake(0, 0);
+}
+
+- (void)exportVideoFromPHAsset:(PHAsset *)asset toPath:(NSString *)outputPath completion:(void (^)(BOOL success, NSError *error))completion {
+    PHVideoRequestOptions *options = [[PHVideoRequestOptions alloc] init];
+    options.version = PHVideoRequestOptionsVersionCurrent;
+    options.deliveryMode = PHVideoRequestOptionsDeliveryModeFastFormat;
+    options.networkAccessAllowed = YES;
+    
+    [[PHImageManager defaultManager] requestAVAssetForVideo:asset options:options resultHandler:^(AVAsset *avAsset, AVAudioMix *audioMix, NSDictionary *info) {
+        if (avAsset == nil) {
+            if (completion) {
+                completion(NO, [NSError errorWithDomain:@"VideoExport" code:-1 userInfo:@{NSLocalizedDescriptionKey: @"Failed to load video asset"}]);
+            }
+            return;
+        }
+        
+        NSError *error;
+
+        if ([avAsset isKindOfClass:[AVURLAsset class]]) {
+            AVURLAsset *urlAsset = (AVURLAsset *)avAsset;
+            NSURL *sourceURL = urlAsset.URL;
+            
+            if (sourceURL && [[NSFileManager defaultManager] isReadableFileAtPath:sourceURL.path]) {
+                NSError *copyError = nil;
+                if ([[NSFileManager defaultManager] copyItemAtPath:sourceURL.path toPath:outputPath error:&copyError]) {
+                    if (completion) {
+                        completion(YES, nil);
+                    }
+                    return;
+                } else {
+                    error = [NSError errorWithDomain:@"VideoExport" code:-1 userInfo:@{NSLocalizedDescriptionKey: copyError.localizedDescription}];
+                    if (completion) {
+                        completion(NO, error);
+                    }
+                }
+            } else {
+                error = [NSError errorWithDomain:@"VideoExport" code:-1 userInfo:@{NSLocalizedDescriptionKey: @"Source file not readable or doesn't exist"}];
+                if (completion) {
+                    completion(NO, error);
+                }
+            }
+        } else {
+            error = [NSError errorWithDomain:@"VideoExport" code:-1 userInfo:@{NSLocalizedDescriptionKey: @"AVAsset is not AVURLAsset"}];
+            if (completion) {
+                completion(NO, error);
+            }
+        }
+    }];
+}
+ 
 //Optional implementation:
 -(void)assetsPickerControllerDidCancel:(GMImagePickerController *)picker
 {
