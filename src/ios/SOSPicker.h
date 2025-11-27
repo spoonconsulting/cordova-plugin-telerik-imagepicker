@@ -26,5 +26,7 @@
 @property (nonatomic, assign) NSInteger quality;
 @property (nonatomic, assign) NSInteger outputType;
 @property (nonatomic, assign) NSInteger maxMB;
+@property (nonatomic, assign) BOOL videoSizeLimitExceeded;
+@property (nonatomic, assign) BOOL videoExportFailed;
 
 @end

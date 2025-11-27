@@ -68,6 +68,8 @@ typedef enum : NSUInteger {
     self.height = [[options objectForKey:@"height"] integerValue];
     self.quality = [[options objectForKey:@"quality"] integerValue];
     self.maxMB = [[options objectForKey:@"maxFileSize"] integerValue];
+    self.videoSizeLimitExceeded = NO;
+    self.videoExportFailed = NO;
 
     self.callbackId = command.callbackId;
     [self launchGMImagePicker:allow_video title:title message:message disable_popover:disable_popover maximumImagesCount:maximumImagesCount];
@@ -214,6 +216,10 @@ typedef enum : NSUInteger {
         } while ([fileMgr fileExistsAtPath:filePath]);
         
         if (isVideo && phAsset) {
+            NSInteger exceeded = [self checkVideoSize:phAsset];
+            
+            if (exceeded) continue;
+
             dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
             __block BOOL exportSuccess = NO;
             __block NSError *exportError = nil;
@@ -224,10 +230,10 @@ typedef enum : NSUInteger {
                 dispatch_semaphore_signal(semaphore);
             }];
             
-            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 5 * 60 * NSEC_PER_SEC);
+            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC);
             if (dispatch_semaphore_wait(semaphore, timeout) != 0) {
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:@"Video export timeout"];
-                break;
+                self.videoExportFailed = YES;
+                continue;
             }
             
             if (exportSuccess) {
@@ -242,8 +248,8 @@ typedef enum : NSUInteger {
                 }
                 [resultList addObject: videoInfo];
             } else {
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:exportError ? exportError.localizedDescription : @"Video export failed"];
-                break;
+                self.videoExportFailed = YES;
+                continue;
             }
             continue;
         }
@@ -254,7 +260,7 @@ typedef enum : NSUInteger {
             // no scaling required
             if (self.outputType == BASE64_STRING){
                 UIImage* image = [UIImage imageNamed:item.image_fullsize];
-                NSDictionary *imageInfo = @{@"path":[UIImageJPEGRepresentation(image, self.quality/100.0f) base64EncodedStringWithOptions:0], 
+                NSDictionary *imageInfo = @{@"path":[UIImageJPEGRepresentation(image, self.quality/100.0f) base64EncodedStringWithOptions:0],
                                             @"width": [NSNumber numberWithFloat:image.size.width],
                                             @"height": [NSNumber numberWithFloat:image.size.height]};
                 [resultList addObject: imageInfo];
@@ -262,8 +268,8 @@ typedef enum : NSUInteger {
                 if (self.quality == 100) {
                     // no scaling, no downsampling, this is the fastest option
                     UIImage* image = [UIImage imageNamed:item.image_fullsize];
-                    NSDictionary *imageInfo = @{@"path":item.image_fullsize, 
-                                                @"width": [NSNumber numberWithFloat:image.size.width], 
+                    NSDictionary *imageInfo = @{@"path":item.image_fullsize,
+                                                @"width": [NSNumber numberWithFloat:image.size.width],
                                                 @"height": [NSNumber numberWithFloat:image.size.height]};
                     [resultList addObject: imageInfo];
                    
@@ -275,8 +281,8 @@ typedef enum : NSUInteger {
                         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:[err localizedDescription]];
                         break;
                     } else {
-                        NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString], 
-                                                    @"width": [NSNumber numberWithFloat:image.size.width], 
+                        NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString],
+                                                    @"width": [NSNumber numberWithFloat:image.size.width],
                                                     @"height": [NSNumber numberWithFloat:image.size.height]};
                         [resultList addObject: imageInfo];
                     }
@@ -293,13 +299,13 @@ typedef enum : NSUInteger {
                 break;
             } else {
                 if(self.outputType == BASE64_STRING){
-                    NSDictionary *imageInfo = @{@"path":[data base64EncodedStringWithOptions:0], 
-                                                @"width": [NSNumber numberWithFloat:scaledImage.size.width], 
+                    NSDictionary *imageInfo = @{@"path":[data base64EncodedStringWithOptions:0],
+                                                @"width": [NSNumber numberWithFloat:scaledImage.size.width],
                                                 @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
                     [resultList addObject: imageInfo];
                 } else {
-                    NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString], 
-                                                @"width": [NSNumber numberWithFloat:scaledImage.size.width], 
+                    NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString],
+                                                @"width": [NSNumber numberWithFloat:scaledImage.size.width],
                                                 @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
                     [resultList addObject: imageInfo];
                 }
@@ -311,9 +317,49 @@ typedef enum : NSUInteger {
         result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:resultList];
     }
 
+    // if videoSizeLimitExceeded is YES, display toast message
+    if (self.videoSizeLimitExceeded == YES && self.videoExportFailed == YES) {
+        NSString *toastMsg = [NSString stringWithFormat:@"Video(s) above max limit %ldMB not selected and some videos failed to be exported", (long)self.maxMB];
+        [self showToastMessage:toastMsg];
+    } else if (self.videoSizeLimitExceeded == YES) {
+        NSString *toastMsg = [NSString stringWithFormat:@"Video(s) above max limit %ldMB not selected", (long)self.maxMB];
+        [self showToastMessage:toastMsg];
+    } else if (self.videoExportFailed == YES) {
+        NSString *toastMsg = [NSString stringWithFormat:@"Some videos failed to be exported", (long)self.maxMB];
+        [self showToastMessage:toastMsg];
+    }
+
     [self.viewController dismissViewControllerAnimated:YES completion:nil];
     [self.commandDelegate sendPluginResult:result callbackId:self.callbackId];
 
+}
+
+- (BOOL)checkVideoSize:(PHAsset *) asset {
+    NSArray *resources = [PHAssetResource assetResourcesForAsset:asset];
+    long long fileSize = 0;
+
+    for (PHAssetResource *resource in resources) {
+        if (resource.type == PHAssetResourceTypeVideo ||
+            resource.type == PHAssetResourceTypeFullSizeVideo ||
+            resource.type == PHAssetResourceTypePairedVideo) {
+
+            @try {
+                id fileSizeValue = [resource valueForKey:@"fileSize"];
+                if ([fileSizeValue isKindOfClass:[NSNumber class]]) {
+                    fileSize = [fileSizeValue longLongValue];
+                    break;
+                }
+            } @catch (NSException *exception) {
+                // Continue to next resource if fileSize is not available
+            }
+        }
+    }
+
+    if ((fileSize / (1024.0 * 1024.0)) > self.maxMB) {
+        self.videoSizeLimitExceeded = YES;
+        return YES;
+    }
+    return NO;
 }
 
 - (CGSize)getVideoDimensionsAtPath:(NSString *)path {
@@ -438,42 +484,73 @@ typedef enum : NSUInteger {
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-#pragma mark - GMImagePickerControllerDelegate - Asset Filtering
-
-- (BOOL)assetsPickerController:(GMImagePickerController *)picker shouldShowAsset:(PHAsset *)asset {
-    if (asset.mediaType != PHAssetMediaTypeVideo) {
-        return YES;
-    }
-
-    NSArray *resources = [PHAssetResource assetResourcesForAsset:asset];
-    long long fileSize = 0;
-    
-    for (PHAssetResource *resource in resources) {
-        if (resource.type == PHAssetResourceTypeVideo ||
-            resource.type == PHAssetResourceTypeFullSizeVideo ||
-            resource.type == PHAssetResourceTypePairedVideo) {
-            
-            @try {
-                id fileSizeValue = [resource valueForKey:@"fileSize"];
-                if ([fileSizeValue isKindOfClass:[NSNumber class]]) {
-                    fileSize = [fileSizeValue longLongValue];
-                    break;
+- (void)showToastMessage:(NSString *)toastMsg {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIViewController *rootViewController = self.viewController;
+        if (rootViewController == nil) {
+            // Use modern approach for iOS 13+ with multiple scenes support
+            if (@available(iOS 13.0, *)) {
+                NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+                for (UIScene *scene in connectedScenes) {
+                    if ([scene isKindOfClass:[UIWindowScene class]]) {
+                        UIWindowScene *windowScene = (UIWindowScene *)scene;
+                        for (UIWindow *window in windowScene.windows) {
+                            if (window.isKeyWindow) {
+                                rootViewController = window.rootViewController;
+                                break;
+                            }
+                        }
+                        if (rootViewController != nil) break;
+                    }
                 }
-            } @catch (NSException *exception) {
-                // Continue to next resource if fileSize is not available
+            } else {
+                // Fallback for iOS 12 and earlier
+                rootViewController = [[[UIApplication sharedApplication] windows] firstObject].rootViewController;
             }
         }
-    }
-    
-    if (fileSize > 0) {
-        CGFloat mb = fileSize / (1024.0 * 1024.0);
         
-        if (mb > self.maxMB) {
-            return NO;
+        if (rootViewController == nil) {
+            return; // Cannot show toast without a view controller
         }
-        return YES;
-    }
-    return YES;
+        
+        UILabel *toastLabel = [[UILabel alloc] init];
+        toastLabel.text = toastMsg;
+        toastLabel.textColor = [UIColor whiteColor];
+        toastLabel.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.8];
+        toastLabel.textAlignment = NSTextAlignmentCenter;
+        toastLabel.font = [UIFont systemFontOfSize:14];
+        toastLabel.numberOfLines = 0;
+        toastLabel.layer.cornerRadius = 8.0;
+        toastLabel.clipsToBounds = YES;
+        
+        CGSize maxSize = CGSizeMake(rootViewController.view.bounds.size.width - 40, CGFLOAT_MAX);
+        CGSize expectedSize = [toastLabel.text boundingRectWithSize:maxSize
+                                                             options:NSStringDrawingUsesLineFragmentOrigin
+                                                          attributes:@{NSFontAttributeName: toastLabel.font}
+                                                             context:nil].size;
+        
+        CGFloat padding = 16.0;
+        CGFloat labelWidth = expectedSize.width + padding * 2;
+        CGFloat labelHeight = expectedSize.height + padding * 2;
+        
+        CGFloat x = (rootViewController.view.bounds.size.width - labelWidth) / 2;
+        CGFloat y = rootViewController.view.bounds.size.height - labelHeight - 100;
+        
+        toastLabel.frame = CGRectMake(x, y, labelWidth, labelHeight);
+        toastLabel.alpha = 0.0;
+        
+        [rootViewController.view addSubview:toastLabel];
+        
+        [UIView animateWithDuration:0.3 animations:^{
+            toastLabel.alpha = 1.0;
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.3 delay:2.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                toastLabel.alpha = 0.0;
+            } completion:^(BOOL finished) {
+                [toastLabel removeFromSuperview];
+            }];
+        }];
+    });
 }
 
 @end

@@ -17,7 +17,6 @@
 @interface GMGridViewController : UICollectionViewController
 
 @property (strong) PHFetchResult *assetsFetchResults;
-@property (nonatomic, strong) NSArray *filteredAssets;
 @property (nonatomic, weak) NSMutableDictionary * dic_asset_fetches;
 
 -(id)initWithPicker:(GMImagePickerController *)picker;
