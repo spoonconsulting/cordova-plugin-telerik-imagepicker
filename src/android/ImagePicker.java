@@ -107,6 +107,7 @@ public class ImagePicker extends CordovaPlugin {
 
             cordova.startActivityForResult(this, imagePickerIntent, SELECT_PICTURE);
             this.showMaxLimitWarning(useFilePicker);
+            this.showMaxFileSizeWarning();
             return true;
         }
         return false;
@@ -421,6 +422,7 @@ public class ImagePicker extends CordovaPlugin {
         }
         (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
     }
+
     private void showMaxLimitWarning(int deviceMaxLimit) {
         String toastMsg = "The maximumImagesCount:" + this.maxImageCount +
                 " is greater than the device's max limit of images that can be selected from the MediaStore: " + deviceMaxLimit +
@@ -428,6 +430,12 @@ public class ImagePicker extends CordovaPlugin {
 
         (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
     }
+
+    private void showMaxFileSizeWarning() {
+        String toastMsg = "You can only select Media(s) up to max limit of " + this.maxFileSize + "MB";
+        cordova.getActivity().runOnUiThread(() -> (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show());
+    }
+
     private void showMaxFileSizeExceededWarning() {
         String toastMsg = "Media(s) above max limit " + this.maxFileSize + "MB not selected";
         cordova.getActivity().runOnUiThread(() -> (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show());
