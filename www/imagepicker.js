@@ -59,7 +59,8 @@ ImagePicker.prototype.getPictures = function(success, fail, options) {
 
 	var params = {
 		maximumImagesCount: options.maximumImagesCount ? options.maximumImagesCount : 15,
-		maxFileSize: options.maxFileSize ? options.maxFileSize : 5,
+		maxPhotoSize: options.maxPhotoSize ? options.maxPhotoSize : 10,
+		maxVideoSize: options.maxVideoSize ? options.maxVideoSize : 5,
 		useFilePicker: options.useFilePicker ? options.useFilePicker : false,
 		width: options.width ? options.width : 0,
 		height: options.height ? options.height : 0,

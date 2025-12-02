@@ -63,7 +63,8 @@ public class ImagePicker extends CordovaPlugin {
 
     private CallbackContext callbackContext;
     private int maxImageCount;
-    private int maxFileSize;
+    private int maxPhotoSize;
+    private int maxVideoSize;
     private LinearLayout layout = null;
 
     public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -77,7 +78,8 @@ public class ImagePicker extends CordovaPlugin {
         } else if (ACTION_GET_PICTURES.equals(action)) {
             final JSONObject params = args.getJSONObject(0);
             this.maxImageCount = params.has("maximumImagesCount") ? params.getInt("maximumImagesCount") : 20;
-            this.maxFileSize = params.has("maxFileSize") ? params.getInt("maxFileSize") : 5;
+            this.maxPhotoSize = params.has("maxPhotoSize") ? params.getInt("maxPhotoSize") : 10;
+            this.maxVideoSize = params.has("maxVideoSize") ? params.getInt("maxVideoSize") : 5;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 2) {
                 int deviceMaxLimit = MediaStore.getPickImagesMaxLimit();
                if (this.maxImageCount > deviceMaxLimit) {
@@ -107,7 +109,7 @@ public class ImagePicker extends CordovaPlugin {
 
             cordova.startActivityForResult(this, imagePickerIntent, SELECT_PICTURE);
             this.showMaxLimitWarning(useFilePicker);
-            this.showMaxFileSizeWarning();
+            this.showMaxFileSizeWarning(allowVideo);
             return true;
         }
         return false;
@@ -127,11 +129,13 @@ public class ImagePicker extends CordovaPlugin {
                 String path;
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     ArrayList<String> fileURIs = new ArrayList<>();
+                    boolean isVideo = false;
+                    int maxFileSize = this.maxPhotoSize;
                     if (requestCode == SELECT_PICTURE) {
                         if (data.getData() != null) {
                             uri = data.getData();
                             double size = this.getFileSizeFromUri(uri);
-                            if (size > this.maxFileSize) {
+                            if (size > maxFileSize) {
                                 sizeLimitExceeded = true;
                             } else {
                                 path = ImagePicker.this.copyFileToInternalStorage(uri, "");
@@ -146,7 +150,7 @@ public class ImagePicker extends CordovaPlugin {
                             for (int i = 0; i < clip.getItemCount(); i++) {
                                 uri = clip.getItemAt(i).getUri();
                                 double size = this.getFileSizeFromUri(uri);
-                                if (size > this.maxFileSize) {
+                                if (size > maxFileSize) {
                                     sizeLimitExceeded = true;
                                     if (i + 1 >= ImagePicker.this.maxImageCount) {
                                         break;
@@ -168,7 +172,7 @@ public class ImagePicker extends CordovaPlugin {
                     }
                     for (int i=0; i < fileURIs.size(); i++) {
                         String fileUri = fileURIs.get(i);
-                        boolean isVideo = this.isVideo(fileUri);
+                        isVideo = this.isVideo(fileUri);
                         BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inJustDecodeBounds = true;
                         Uri ImageUri = Uri.parse(fileUri);
@@ -431,13 +435,16 @@ public class ImagePicker extends CordovaPlugin {
         (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
     }
 
-    private void showMaxFileSizeWarning() {
-        String toastMsg = "You can only select Media(s) up to max limit of " + this.maxFileSize + "MB";
+    private void showMaxFileSizeWarning(boolean allowVideo) {
+        String toastMsg = "Image size limit is " + this.maxPhotoSize + "MB";
+        if (allowVideo) {
+            toastMsg += "\nVideo size limit is " + this.maxVideoSize + "MB";
+        }
         cordova.getActivity().runOnUiThread(() -> (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show());
     }
 
     private void showMaxFileSizeExceededWarning() {
-        String toastMsg = "Media(s) above max limit " + this.maxFileSize + "MB not selected";
+        String toastMsg = "Media(s) above max limit not selected";
         cordova.getActivity().runOnUiThread(() -> (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show());
     }
 }
