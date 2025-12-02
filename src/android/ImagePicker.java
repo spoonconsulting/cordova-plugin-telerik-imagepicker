@@ -134,6 +134,10 @@ public class ImagePicker extends CordovaPlugin {
                     if (requestCode == SELECT_PICTURE) {
                         if (data.getData() != null) {
                             uri = data.getData();
+                            isVideo = this.isVideo(uri);
+                            if (isVideo) {
+                                maxFileSize = this.maxVideoSize;
+                            }
                             double size = this.getFileSizeFromUri(uri);
                             if (size > maxFileSize) {
                                 sizeLimitExceeded = true;
@@ -149,6 +153,10 @@ public class ImagePicker extends CordovaPlugin {
                             ClipData clip = data.getClipData();
                             for (int i = 0; i < clip.getItemCount(); i++) {
                                 uri = clip.getItemAt(i).getUri();
+                                isVideo = this.isVideo(uri);
+                                if (isVideo) {
+                                    maxFileSize = this.maxVideoSize;
+                                }
                                 double size = this.getFileSizeFromUri(uri);
                                 if (size > maxFileSize) {
                                     sizeLimitExceeded = true;
@@ -261,6 +269,10 @@ public class ImagePicker extends CordovaPlugin {
         return mime != null && mime.startsWith("video/");
     }
 
+    public boolean isVideo(Uri uri) {
+        String mime = cordova.getActivity().getContentResolver().getType(uri);
+        return mime != null && mime.startsWith("video/");
+    }
 
     @Override
     public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
