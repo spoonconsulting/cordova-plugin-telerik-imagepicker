@@ -436,10 +436,8 @@ public class ImagePicker extends CordovaPlugin {
     }
 
     private void showMaxFileSizeWarning(boolean allowVideo) {
-        String toastMsg = "Image size limit is " + this.maxPhotoSize + "MB";
-        if (allowVideo) {
-            toastMsg += "\nVideo size limit is " + this.maxVideoSize + "MB";
-        }
+        String toastMsg = allowVideo ? "Image size limit is " + this.maxPhotoSize + "MB\nVideo size limit is " + this.maxVideoSize + "MB"
+                : "Image size limit is " + this.maxPhotoSize + "MB";
         cordova.getActivity().runOnUiThread(() -> (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show());
     }
 
