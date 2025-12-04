@@ -67,8 +67,9 @@ typedef enum : NSUInteger {
     self.width = [[options objectForKey:@"width"] integerValue];
     self.height = [[options objectForKey:@"height"] integerValue];
     self.quality = [[options objectForKey:@"quality"] integerValue];
-    self.maxMB = [[options objectForKey:@"maxFileSize"] integerValue];
-    self.videoSizeLimitExceeded = NO;
+    self.maxVideoSize = [[options objectForKey:@"maxVideoSize"] integerValue];
+    self.maxPhotoSize = [[options objectForKey:@"maxPhotoSize"] integerValue];
+    self.mediaSizeLimitExceeded = NO;
     self.videoExportFailed = NO;
 
     self.callbackId = command.callbackId;
@@ -97,6 +98,20 @@ typedef enum : NSUInteger {
     }
 
     [self.viewController showViewController:picker sender:nil];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        NSString *toastMsg;
+        if (allow_video) {
+            toastMsg = [NSString stringWithFormat:@"Image size limit is %ldMB\nVideo size limit is %ldMB",
+                        (long)self.maxPhotoSize,
+                        (long)self.maxVideoSize];
+        } else {
+            toastMsg = [NSString stringWithFormat:@"Image size limit is %ldMB",
+                        (long)self.maxPhotoSize];
+        }
+        [self showToastMessage:toastMsg onViewController:picker];
+    });
+
 }
 
 
@@ -216,7 +231,7 @@ typedef enum : NSUInteger {
         } while ([fileMgr fileExistsAtPath:filePath]);
         
         if (isVideo && phAsset) {
-            NSInteger exceeded = [self checkVideoSize:phAsset];
+            BOOL exceeded = [self checkMediaSize:phAsset];
             
             if (exceeded) continue;
 
@@ -252,6 +267,11 @@ typedef enum : NSUInteger {
                 continue;
             }
             continue;
+        }
+        
+        if (phAsset && phAsset.mediaType == PHAssetMediaTypeImage) {
+            BOOL exceeded = [self checkMediaSize:phAsset];
+            if (exceeded) continue;
         }
         
         // Handle images
@@ -318,14 +338,14 @@ typedef enum : NSUInteger {
     }
 
     // if videoSizeLimitExceeded is YES, display toast message
-    if (self.videoSizeLimitExceeded == YES && self.videoExportFailed == YES) {
-        NSString *toastMsg = [NSString stringWithFormat:@"Video(s) above max limit %ldMB not selected and some videos failed to be exported", (long)self.maxMB];
+    if (self.mediaSizeLimitExceeded == YES && self.videoExportFailed == YES) {
+        NSString *toastMsg = [NSString stringWithFormat:@"Media(s) above max limit not selected and some videos failed to be exported"];
         [self showToastMessage:toastMsg];
-    } else if (self.videoSizeLimitExceeded == YES) {
-        NSString *toastMsg = [NSString stringWithFormat:@"Video(s) above max limit %ldMB not selected", (long)self.maxMB];
+    } else if (self.mediaSizeLimitExceeded == YES) {
+        NSString *toastMsg = [NSString stringWithFormat:@"Media(s) above max limit not selected"];
         [self showToastMessage:toastMsg];
     } else if (self.videoExportFailed == YES) {
-        NSString *toastMsg = [NSString stringWithFormat:@"Some videos failed to be exported", (long)self.maxMB];
+        NSString *toastMsg = [NSString stringWithFormat:@"Some videos failed to be exported"];
         [self showToastMessage:toastMsg];
     }
 
@@ -334,15 +354,33 @@ typedef enum : NSUInteger {
 
 }
 
-- (BOOL)checkVideoSize:(PHAsset *) asset {
+- (BOOL)checkMediaSize:(PHAsset *) asset {
     NSArray *resources = [PHAssetResource assetResourcesForAsset:asset];
     long long fileSize = 0;
+    NSInteger maxSize = 0;
+    BOOL isVideo = (asset.mediaType == PHAssetMediaTypeVideo);
+
+    if (isVideo) {
+        maxSize = self.maxVideoSize;
+    } else {
+        maxSize = self.maxPhotoSize;
+    }
 
     for (PHAssetResource *resource in resources) {
-        if (resource.type == PHAssetResourceTypeVideo ||
-            resource.type == PHAssetResourceTypeFullSizeVideo ||
-            resource.type == PHAssetResourceTypePairedVideo) {
+        PHAssetResourceType resourceType = resource.type;
+        BOOL matchesType = NO;
 
+        if (isVideo) {
+            matchesType = (resourceType == PHAssetResourceTypeVideo ||
+                          resourceType == PHAssetResourceTypeFullSizeVideo ||
+                          resourceType == PHAssetResourceTypePairedVideo);
+        } else {
+            matchesType = (resourceType == PHAssetResourceTypePhoto ||
+                          resourceType == PHAssetResourceTypeFullSizePhoto ||
+                          resourceType == PHAssetResourceTypeAlternatePhoto);
+        }
+        
+        if (matchesType) {
             @try {
                 id fileSizeValue = [resource valueForKey:@"fileSize"];
                 if ([fileSizeValue isKindOfClass:[NSNumber class]]) {
@@ -355,8 +393,8 @@ typedef enum : NSUInteger {
         }
     }
 
-    if ((fileSize / (1024.0 * 1024.0)) > self.maxMB) {
-        self.videoSizeLimitExceeded = YES;
+    if ((fileSize / (1024.0 * 1024.0)) > maxSize) {
+        self.mediaSizeLimitExceeded = YES;
         return YES;
     }
     return NO;
@@ -485,8 +523,12 @@ typedef enum : NSUInteger {
 }
 
 - (void)showToastMessage:(NSString *)toastMsg {
+    [self showToastMessage:toastMsg onViewController:nil];
+}
+
+- (void)showToastMessage:(NSString *)toastMsg onViewController:(UIViewController *)targetViewController {
     dispatch_async(dispatch_get_main_queue(), ^{
-        UIViewController *rootViewController = self.viewController;
+        UIViewController *rootViewController = targetViewController ?: self.viewController;
         if (rootViewController == nil) {
             // Use modern approach for iOS 13+ with multiple scenes support
             if (@available(iOS 13.0, *)) {
