@@ -78,7 +78,7 @@ public class ImagePicker extends CordovaPlugin {
         } else if (ACTION_GET_PICTURES.equals(action)) {
             final JSONObject params = args.getJSONObject(0);
             this.maxImageCount = params.has("maximumImagesCount") ? params.getInt("maximumImagesCount") : 20;
-            this.maxPhotoSize = params.has("maxPhotoSize") ? params.getInt("maxPhotoSize") : 10;
+            this.maxPhotoSize = params.has("maxPhotoSize") ? params.getInt("maxPhotoSize") : 15;
             this.maxVideoSize = params.has("maxVideoSize") ? params.getInt("maxVideoSize") : 5;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 2) {
                 int deviceMaxLimit = MediaStore.getPickImagesMaxLimit();
