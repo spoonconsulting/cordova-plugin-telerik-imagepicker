@@ -213,121 +213,123 @@ typedef enum : NSUInteger {
     NSArray *phAssets = picker.selectedAssets;
 
     for (NSInteger i = 0; i < fetchArray.count; i++) {
-        GMFetchItem *item = fetchArray[i];
-        PHAsset *phAsset = (i < phAssets.count) ? phAssets[i] : nil;
+        @autoreleasepool {
+            GMFetchItem *item = fetchArray[i];
+            PHAsset *phAsset = (i < phAssets.count) ? phAssets[i] : nil;
 
-        if ( !item.image_fullsize ) {
-            continue;
-        }
-     
-        BOOL isVideo = NO;
-        if (phAsset && phAsset.mediaType == PHAssetMediaTypeVideo) {
-            isVideo = YES;
-        }
-    
-        NSString *fileExtension = isVideo ? @"mp4" : @"jpg";
-        do {
-            filePath = [NSString stringWithFormat:@"%@/%@.%@", libPath, [[NSUUID UUID] UUIDString], fileExtension];
-        } while ([fileMgr fileExistsAtPath:filePath]);
-        
-        if (isVideo && phAsset) {
-            BOOL exceeded = [self checkMediaSize:phAsset];
-            
-            if (exceeded) continue;
-
-            dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-            __block BOOL exportSuccess = NO;
-            __block NSError *exportError = nil;
-            
-            [self exportVideoFromPHAsset:phAsset toPath:filePath completion:^(BOOL success, NSError *error) {
-                exportSuccess = success;
-                exportError = error;
-                dispatch_semaphore_signal(semaphore);
-            }];
-            
-            dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC);
-            if (dispatch_semaphore_wait(semaphore, timeout) != 0) {
-                self.videoExportFailed = YES;
+            if ( !item.image_fullsize ) {
                 continue;
             }
+         
+            BOOL isVideo = NO;
+            if (phAsset && phAsset.mediaType == PHAssetMediaTypeVideo) {
+                isVideo = YES;
+            }
+        
+            NSString *fileExtension = isVideo ? @"mp4" : @"jpg";
+            do {
+                filePath = [NSString stringWithFormat:@"%@/%@.%@", libPath, [[NSUUID UUID] UUIDString], fileExtension];
+            } while ([fileMgr fileExistsAtPath:filePath]);
             
-            if (exportSuccess) {
-                CGSize videoSize = [self getVideoDimensionsAtPath:filePath];
-                NSString *thumbnailPath = [self generateThumbnailForVideoAtURL:[NSURL fileURLWithPath:filePath]];
-                NSMutableDictionary *videoInfo = [NSMutableDictionary dictionaryWithDictionary:@{@"path":[[NSURL fileURLWithPath:filePath] absoluteString],
-                                            @"isVideo": @(YES),
-                                            @"width": [NSNumber numberWithFloat:videoSize.width],
-                                            @"height": [NSNumber numberWithFloat:videoSize.height]}];
-                if (thumbnailPath) {
-                    [videoInfo setObject:[[NSURL fileURLWithPath:thumbnailPath] absoluteString] forKey:@"thumbnail"];
+            if (isVideo && phAsset) {
+                BOOL exceeded = [self checkMediaSize:phAsset];
+                
+                if (exceeded) continue;
+
+                dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+                __block BOOL exportSuccess = NO;
+                __block NSError *exportError = nil;
+                
+                [self exportVideoFromPHAsset:phAsset toPath:filePath completion:^(BOOL success, NSError *error) {
+                    exportSuccess = success;
+                    exportError = error;
+                    dispatch_semaphore_signal(semaphore);
+                }];
+                
+                dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC);
+                if (dispatch_semaphore_wait(semaphore, timeout) != 0) {
+                    self.videoExportFailed = YES;
+                    continue;
                 }
-                [resultList addObject: videoInfo];
-            } else {
-                self.videoExportFailed = YES;
+                
+                if (exportSuccess) {
+                    CGSize videoSize = [self getVideoDimensionsAtPath:filePath];
+                    NSString *thumbnailPath = [self generateThumbnailForVideoAtURL:[NSURL fileURLWithPath:filePath]];
+                    NSMutableDictionary *videoInfo = [NSMutableDictionary dictionaryWithDictionary:@{@"path":[[NSURL fileURLWithPath:filePath] absoluteString],
+                                                @"isVideo": @(YES),
+                                                @"width": [NSNumber numberWithFloat:videoSize.width],
+                                                @"height": [NSNumber numberWithFloat:videoSize.height]}];
+                    if (thumbnailPath) {
+                        [videoInfo setObject:[[NSURL fileURLWithPath:thumbnailPath] absoluteString] forKey:@"thumbnail"];
+                    }
+                    [resultList addObject: videoInfo];
+                } else {
+                    self.videoExportFailed = YES;
+                    continue;
+                }
                 continue;
             }
-            continue;
-        }
-        
-        if (phAsset && phAsset.mediaType == PHAssetMediaTypeImage) {
-            BOOL exceeded = [self checkMediaSize:phAsset];
-            if (exceeded) continue;
-        }
-        
-        // Handle images
-        NSData* data = nil;
-        if (self.width == 0 && self.height == 0) {
-            // no scaling required
-            if (self.outputType == BASE64_STRING){
-                UIImage* image = [UIImage imageNamed:item.image_fullsize];
-                NSDictionary *imageInfo = @{@"path":[UIImageJPEGRepresentation(image, self.quality/100.0f) base64EncodedStringWithOptions:0],
-                                            @"width": [NSNumber numberWithFloat:image.size.width],
-                                            @"height": [NSNumber numberWithFloat:image.size.height]};
-                [resultList addObject: imageInfo];
-            } else {
-                if (self.quality == 100) {
-                    // no scaling, no downsampling, this is the fastest option
+            
+            if (phAsset && phAsset.mediaType == PHAssetMediaTypeImage) {
+                BOOL exceeded = [self checkMediaSize:phAsset];
+                if (exceeded) continue;
+            }
+            
+            // Handle images
+            NSData* data = nil;
+            if (self.width == 0 && self.height == 0) {
+                // no scaling required
+                if (self.outputType == BASE64_STRING){
                     UIImage* image = [UIImage imageNamed:item.image_fullsize];
-                    NSDictionary *imageInfo = @{@"path":item.image_fullsize,
+                    NSDictionary *imageInfo = @{@"path":[UIImageJPEGRepresentation(image, self.quality/100.0f) base64EncodedStringWithOptions:0],
                                                 @"width": [NSNumber numberWithFloat:image.size.width],
                                                 @"height": [NSNumber numberWithFloat:image.size.height]};
                     [resultList addObject: imageInfo];
-                   
                 } else {
-                    // resample first
-                    UIImage* image = [UIImage imageNamed:item.image_fullsize];
-                    data = UIImageJPEGRepresentation(image, self.quality/100.0f);
-                    if (![data writeToFile:filePath options:NSAtomicWrite error:&err]) {
-                        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:[err localizedDescription]];
-                        break;
-                    } else {
-                        NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString],
+                    if (self.quality == 100) {
+                        // no scaling, no downsampling, this is the fastest option
+                        UIImage* image = [UIImage imageNamed:item.image_fullsize];
+                        NSDictionary *imageInfo = @{@"path":item.image_fullsize,
                                                     @"width": [NSNumber numberWithFloat:image.size.width],
                                                     @"height": [NSNumber numberWithFloat:image.size.height]};
                         [resultList addObject: imageInfo];
+                       
+                    } else {
+                        // resample first
+                        UIImage* image = [UIImage imageNamed:item.image_fullsize];
+                        data = UIImageJPEGRepresentation(image, self.quality/100.0f);
+                        if (![data writeToFile:filePath options:NSAtomicWrite error:&err]) {
+                            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:[err localizedDescription]];
+                            break;
+                        } else {
+                            NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString],
+                                                        @"width": [NSNumber numberWithFloat:image.size.width],
+                                                        @"height": [NSNumber numberWithFloat:image.size.height]};
+                            [resultList addObject: imageInfo];
+                        }
                     }
                 }
-            }
-        } else {
-            // scale
-            UIImage* image = [UIImage imageNamed:item.image_fullsize];
-            UIImage* scaledImage = [self imageByScalingNotCroppingForSize:image toSize:targetSize];
-            data = UIImageJPEGRepresentation(scaledImage, self.quality/100.0f);
-
-            if (![data writeToFile:filePath options:NSAtomicWrite error:&err]) {
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:[err localizedDescription]];
-                break;
             } else {
-                if(self.outputType == BASE64_STRING){
-                    NSDictionary *imageInfo = @{@"path":[data base64EncodedStringWithOptions:0],
-                                                @"width": [NSNumber numberWithFloat:scaledImage.size.width],
-                                                @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
-                    [resultList addObject: imageInfo];
+                // scale
+                UIImage* image = [UIImage imageNamed:item.image_fullsize];
+                UIImage* scaledImage = [self imageByScalingNotCroppingForSize:image toSize:targetSize];
+                data = UIImageJPEGRepresentation(scaledImage, self.quality/100.0f);
+
+                if (![data writeToFile:filePath options:NSAtomicWrite error:&err]) {
+                    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_IO_EXCEPTION messageAsString:[err localizedDescription]];
+                    break;
                 } else {
-                    NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString],
-                                                @"width": [NSNumber numberWithFloat:scaledImage.size.width],
-                                                @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
-                    [resultList addObject: imageInfo];
+                    if(self.outputType == BASE64_STRING){
+                        NSDictionary *imageInfo = @{@"path":[data base64EncodedStringWithOptions:0],
+                                                    @"width": [NSNumber numberWithFloat:scaledImage.size.width],
+                                                    @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
+                        [resultList addObject: imageInfo];
+                    } else {
+                        NSDictionary *imageInfo = @{@"path":[[NSURL fileURLWithPath:filePath] absoluteString],
+                                                    @"width": [NSNumber numberWithFloat:scaledImage.size.width],
+                                                    @"height": [NSNumber numberWithFloat:scaledImage.size.height]};
+                        [resultList addObject: imageInfo];
+                    }
                 }
             }
         }
@@ -459,47 +461,60 @@ typedef enum : NSUInteger {
     }];
 }
 
-- (NSString*)generateThumbnailForVideoAtURL:(NSURL *)videoURL {
-    AVAsset *asset = [AVAsset assetWithURL:videoURL];
-    AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
-    imageGenerator.appliesPreferredTrackTransform = YES;
-    CMTime time = CMTimeMakeWithSeconds(1.0, 600);
-    NSError *error = nil;
-    CMTime actualTime;
-    CGImageRef imageRef = [imageGenerator copyCGImageAtTime:time actualTime:&actualTime error:&error];
+- (NSString *)generateThumbnailForVideoAtURL:(NSURL *)videoURL {
+    @autoreleasepool {
+        AVAsset *asset = [AVAsset assetWithURL:videoURL];
+        AVAssetImageGenerator *imageGenerator =
+            [[AVAssetImageGenerator alloc] initWithAsset:asset];
 
-    if (error) {
-        NSLog(@"Error generating thumbnail: %@", error.localizedDescription);
-        return nil;
-    }
+        imageGenerator.appliesPreferredTrackTransform = YES;
+        imageGenerator.maximumSize = CGSizeMake(512, 512); // limit memory
 
-    UIImage *thumbnail = [[UIImage alloc] initWithCGImage:imageRef];
-    CGImageRelease(imageRef);
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
-    NSString *libraryDirectory = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"NoCloud"];
-    NSError *directoryError = nil;
-    
-    if (![[NSFileManager defaultManager] fileExistsAtPath:libraryDirectory]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:libraryDirectory withIntermediateDirectories:YES attributes:nil error:&directoryError];
-        if (directoryError) {
-            NSLog(@"Error creating NoCloud directory: %@", directoryError.localizedDescription);
+        CMTime time = CMTimeMakeWithSeconds(1.0, 600);
+        NSError *error = nil;
+        CMTime actualTime = kCMTimeZero;
+
+        CGImageRef imageRef =
+            [imageGenerator copyCGImageAtTime:time
+                                   actualTime:&actualTime
+                                        error:&error];
+
+        if (!imageRef || error) {
+            if (imageRef) CGImageRelease(imageRef);
+            NSLog(@"Error generating thumbnail: %@", error.localizedDescription);
             return nil;
         }
+
+        UIImage *thumbnail = [[UIImage alloc] initWithCGImage:imageRef];
+        CGImageRelease(imageRef);
+
+        NSArray *paths =
+            NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
+                                                NSUserDomainMask,
+                                                YES);
+        NSString *libraryDirectory =
+            [[paths firstObject] stringByAppendingPathComponent:@"NoCloud"];
+
+        [[NSFileManager defaultManager] createDirectoryAtPath:libraryDirectory
+                                  withIntermediateDirectories:YES
+                                                   attributes:nil
+                                                        error:nil];
+
+        NSString *filePath =
+            [libraryDirectory stringByAppendingPathComponent:
+             [NSString stringWithFormat:@"video_thumb_%@.jpg",
+              [[NSUUID UUID] UUIDString]]];
+
+        NSData *jpegData = UIImageJPEGRepresentation(thumbnail, 0.7);
+
+        if (![jpegData writeToFile:filePath atomically:YES]) {
+            return nil;
+        }
+
+        return filePath;
     }
-    
-    NSString *uniqueFileName = [NSString stringWithFormat:@"video_thumb_%@.jpg", [[NSUUID UUID] UUIDString]];
-    NSString *filePath = [libraryDirectory stringByAppendingPathComponent:uniqueFileName];
-    NSData *jpegData = UIImageJPEGRepresentation(thumbnail, 1.0);
-    
-    if ([jpegData writeToFile:filePath atomically:YES]) {
-        NSLog(@"Thumbnail saved successfully at path: %@", filePath);
-    } else {
-        NSLog(@"Failed to save thumbnail.");
-        return nil;
-    }
-    
-    return filePath;
 }
+
  
 //Optional implementation:
 -(void)assetsPickerControllerDidCancel:(GMImagePickerController *)picker
