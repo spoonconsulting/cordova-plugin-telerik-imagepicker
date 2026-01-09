@@ -81,7 +81,12 @@ window.imagePicker.getPictures(
 
         // option to revert to file picker on android
         useFilePicker: boolean
-        
+
+        //Max size limit for images, default 15 Mb
+        maxPhotoSize: int
+
+        //Max size limit for videos, default 5 Mb
+        maxVideoSize: int
     };
     
 ### Note for Android Use
