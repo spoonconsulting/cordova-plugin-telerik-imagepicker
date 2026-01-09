@@ -25,5 +25,9 @@
 @property (nonatomic, assign) NSInteger height;
 @property (nonatomic, assign) NSInteger quality;
 @property (nonatomic, assign) NSInteger outputType;
+@property (nonatomic, assign) NSInteger maxVideoSize;
+@property (nonatomic, assign) NSInteger maxPhotoSize;
+@property (nonatomic, assign) BOOL mediaSizeLimitExceeded;
+@property (nonatomic, assign) BOOL videoExportFailed;
 
 @end
