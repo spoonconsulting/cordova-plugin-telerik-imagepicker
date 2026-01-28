@@ -8,6 +8,7 @@
 
 #import "GMImagePickerController.h"
 #import "GMAlbumsViewController.h"
+#import "GMImagePickerLocalization.h"
 #import "GMGridViewCell.h"
 #import "GMGridViewController.h"
 #import "GMAlbumsViewCell.h"
@@ -76,14 +77,14 @@ static NSString * const CollectionCellReuseIdentifier = @"CollectionCell";
     //if (self.picker.showsCancelButton)
     {
         self.navigationItem.leftBarButtonItem =
-        [[UIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTable(@"picker.navigation.cancel-button", @"GMImagePicker",@"Cancel")
+        [[UIBarButtonItem alloc] initWithTitle:GMImagePickerLocalizedString(@"picker.navigation.cancel-button", @"Cancel")
                                          style:UIBarButtonItemStylePlain
                                         target:self.picker
                                         action:@selector(dismiss:)];
     }
     
     self.navigationItem.rightBarButtonItem =
-    [[UIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTable(@"picker.navigation.done-button", @"GMImagePicker",@"Done")
+    [[UIBarButtonItem alloc] initWithTitle:GMImagePickerLocalizedString(@"picker.navigation.done-button", @"Done")
                                      style:UIBarButtonItemStyleDone
                                     target:self.picker
                                     action:@selector(finishPickingAssets:)];
@@ -95,7 +96,7 @@ static NSString * const CollectionCellReuseIdentifier = @"CollectionCell";
     
     //Title
     if (!self.picker.title)
-        self.title = NSLocalizedStringFromTable(@"picker.navigation.title", @"GMImagePicker",@"Navigation bar default title");
+        self.title = GMImagePickerLocalizedString(@"picker.navigation.title", @"Navigation bar default title");
     else
         self.title = self.picker.title;
     
@@ -124,7 +125,10 @@ static NSString * const CollectionCellReuseIdentifier = @"CollectionCell";
     //PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
     PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
     self.collectionsFetchResults = @[topLevelUserCollections, smartAlbums];
-    self.collectionsLocalizedTitles = @[NSLocalizedStringFromTable(@"picker.table.user-albums-header", @"GMImagePicker",@"Albums"), NSLocalizedStringFromTable(@"picker.table.smart-albums-header", @"GMImagePicker",@"Smart Albums")];
+    self.collectionsLocalizedTitles = @[
+        GMImagePickerLocalizedString(@"picker.table.user-albums-header", @"Albums"),
+        GMImagePickerLocalizedString(@"picker.table.smart-albums-header", @"Smart Albums")
+    ];
     
     [self updateFetchResults];
     
@@ -163,7 +167,7 @@ static NSString * const CollectionCellReuseIdentifier = @"CollectionCell";
         
         PHFetchResult *assetsFetchResult = [PHAsset fetchAssetsWithOptions:options];
         [allFetchResultArray addObject:assetsFetchResult];
-        [allFetchResultLabel addObject:NSLocalizedStringFromTable(@"picker.table.all-photos-label", @"GMImagePicker",@"All photos")];
+        [allFetchResultLabel addObject:GMImagePickerLocalizedString(@"picker.table.all-photos-label", @"All photos")];
     }
     
     //User albums:

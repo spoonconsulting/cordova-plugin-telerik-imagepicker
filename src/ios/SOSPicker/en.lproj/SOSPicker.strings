@@ -1,0 +1,10 @@
+/* Image size limit toast */
+"imagepicker.toast.max-size-image" = "Image size limit is %ldMB";
+/* Image and video size limit toast */
+"imagepicker.toast.max-size-image-video" = "Image size limit is %ldMB\nVideo size limit is %ldMB";
+/* Media size limit exceeded toast */
+"imagepicker.toast.media-limit-exceeded" = "Media(s) above max limit not selected";
+/* Media size limit exceeded and export failed toast */
+"imagepicker.toast.media-limit-exceeded-and-export-failed" = "Media(s) above max limit not selected and some videos failed to be exported";
+/* Video export failed toast */
+"imagepicker.toast.video-export-failed" = "Some videos failed to be exported";

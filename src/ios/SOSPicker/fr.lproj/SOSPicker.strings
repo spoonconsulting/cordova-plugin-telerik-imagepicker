@@ -1,0 +1,10 @@
+/* Image size limit toast */
+"imagepicker.toast.max-size-image" = "La taille maximale des images est de %ld Mo";
+/* Image and video size limit toast */
+"imagepicker.toast.max-size-image-video" = "La taille maximale des images est de %ld Mo\nLa taille maximale des vidéos est de %ld Mo";
+/* Media size limit exceeded toast */
+"imagepicker.toast.media-limit-exceeded" = "Les médias dépassant la limite maximale n'ont pas été sélectionnés";
+/* Media size limit exceeded and export failed toast */
+"imagepicker.toast.media-limit-exceeded-and-export-failed" = "Les médias dépassant la limite maximale n'ont pas été sélectionnés et certaines vidéos n'ont pas pu être exportées";
+/* Video export failed toast */
+"imagepicker.toast.video-export-failed" = "Certaines vidéos n'ont pas pu être exportées";

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="imagepicker_max_limit_warning">Vous ne pouvez sélectionner que %1$d image(s)</string>
+    <string name="imagepicker_max_limit_warning_file_picker">Seules les %1$d première(s) image(s) sélectionnée(s) seront prises.</string>
+    <string name="imagepicker_device_max_limit_warning">maximumImagesCount:%1$d est supérieur à la limite maximale de l'appareil pour les images sélectionnables depuis MediaStore : %2$d. Le nombre maximum d'images sélectionnables est : %2$d</string>
+    <string name="imagepicker_max_file_size_warning_image">La taille maximale des images est de %1$d Mo</string>
+    <string name="imagepicker_max_file_size_warning_image_video">La taille maximale des images est de %1$d Mo\nLa taille maximale des vidéos est de %2$d Mo</string>
+    <string name="imagepicker_max_file_size_exceeded_warning">Les médias dépassant la limite maximale n'ont pas été sélectionnés</string>
+</resources>

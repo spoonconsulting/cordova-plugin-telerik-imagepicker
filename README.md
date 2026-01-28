@@ -79,6 +79,10 @@ window.imagePicker.getPictures(
         // window.imagePicker.OutputType.BASE64_STRING (1)
         outputType: int,
 
+        // BCP-47 language tag to override localization (e.g. "en-US", "fr-FR").
+        // If omitted, the device locale is used.
+        language: string,
+
         // option to revert to file picker on android
         useFilePicker: boolean
 

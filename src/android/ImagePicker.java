@@ -7,6 +7,7 @@ import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,6 +67,7 @@ public class ImagePicker extends CordovaPlugin {
     private int maxImageCount;
     private int maxPhotoSize;
     private int maxVideoSize;
+    private String languageTag;
     private LinearLayout layout = null;
 
     public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -80,6 +83,7 @@ public class ImagePicker extends CordovaPlugin {
             this.maxImageCount = params.has("maximumImagesCount") ? params.getInt("maximumImagesCount") : 20;
             this.maxPhotoSize = params.has("maxPhotoSize") ? params.getInt("maxPhotoSize") : 15;
             this.maxVideoSize = params.has("maxVideoSize") ? params.getInt("maxVideoSize") : 5;
+            this.languageTag = params.has("language") && !params.isNull("language") ? params.getString("language") : null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) >= 2) {
                 int deviceMaxLimit = MediaStore.getPickImagesMaxLimit();
                if (this.maxImageCount > deviceMaxLimit) {
@@ -432,29 +436,60 @@ public class ImagePicker extends CordovaPlugin {
     }
 
     private void showMaxLimitWarning(boolean useFilePicker) {
-        String toastMsg = "You can only select up to " + this.maxImageCount + " image(s)";
+        Context context = getLocalizedContext();
+        String toastMsg = context.getString(R.string.imagepicker_max_limit_warning, this.maxImageCount);
         if (useFilePicker) {
-            toastMsg = "Only the first " + this.maxImageCount + " image(s) selected will be taken.";
+            toastMsg = context.getString(R.string.imagepicker_max_limit_warning_file_picker, this.maxImageCount);
         }
-        (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
+        (Toast.makeText(context, toastMsg, Toast.LENGTH_LONG)).show();
     }
 
     private void showMaxLimitWarning(int deviceMaxLimit) {
-        String toastMsg = "The maximumImagesCount:" + this.maxImageCount +
-                " is greater than the device's max limit of images that can be selected from the MediaStore: " + deviceMaxLimit +
-                ". Maximum number of images that can be selected is: " + deviceMaxLimit;
-
-        (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show();
+        Context context = getLocalizedContext();
+        String toastMsg = context.getString(
+            R.string.imagepicker_device_max_limit_warning,
+            this.maxImageCount,
+            deviceMaxLimit
+        );
+        (Toast.makeText(context, toastMsg, Toast.LENGTH_LONG)).show();
     }
 
     private void showMaxFileSizeWarning(boolean allowVideo) {
-        String toastMsg = allowVideo ? "Image size limit is " + this.maxPhotoSize + "MB\nVideo size limit is " + this.maxVideoSize + "MB"
-                : "Image size limit is " + this.maxPhotoSize + "MB";
-        cordova.getActivity().runOnUiThread(() -> (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show());
+        Context context = getLocalizedContext();
+        String toastMsg = allowVideo
+            ? context.getString(
+                R.string.imagepicker_max_file_size_warning_image_video,
+                this.maxPhotoSize,
+                this.maxVideoSize
+            )
+            : context.getString(R.string.imagepicker_max_file_size_warning_image, this.maxPhotoSize);
+        cordova.getActivity().runOnUiThread(() -> (Toast.makeText(context, toastMsg, Toast.LENGTH_LONG)).show());
     }
 
     private void showMaxFileSizeExceededWarning() {
-        String toastMsg = "Media(s) above max limit not selected";
-        cordova.getActivity().runOnUiThread(() -> (Toast.makeText(cordova.getContext(), toastMsg, Toast.LENGTH_LONG)).show());
+        Context context = getLocalizedContext();
+        String toastMsg = context.getString(R.string.imagepicker_max_file_size_exceeded_warning);
+        cordova.getActivity().runOnUiThread(() -> (Toast.makeText(context, toastMsg, Toast.LENGTH_LONG)).show());
+    }
+
+    private Context getLocalizedContext() {
+        Context context = cordova.getContext();
+        if (this.languageTag == null || this.languageTag.trim().isEmpty()) {
+            return context;
+        }
+        String tag = this.languageTag.replace('_', '-');
+        String[] parts = tag.split("-");
+        Locale locale;
+        if (parts.length >= 2) {
+            locale = new Locale(parts[0], parts[1]);
+        } else {
+            locale = new Locale(parts[0]);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            Configuration config = new Configuration(context.getResources().getConfiguration());
+            config.setLocale(locale);
+            return context.createConfigurationContext(config);
+        }
+        return context;
     }
 }

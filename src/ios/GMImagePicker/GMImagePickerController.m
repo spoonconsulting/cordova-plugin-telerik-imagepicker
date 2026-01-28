@@ -7,6 +7,7 @@
 //
 
 #import "GMImagePickerController.h"
+#import "GMImagePickerLocalization.h"
 #import "GMAlbumsViewController.h"
 
 
@@ -174,23 +175,23 @@
     
     if (nImages>0 && nVideos>0)
     {
-        return [NSString stringWithFormat:NSLocalizedStringFromTable(@"picker.selection.multiple-items", @"GMImagePicker", @"%@ Items Selected" ), @(nImages+nVideos)];
+        return [NSString stringWithFormat:GMImagePickerLocalizedString(@"picker.selection.multiple-items", @"%@ Items Selected" ), @(nImages+nVideos)];
     }
     else if (nImages>1)
     {
-        return [NSString stringWithFormat:NSLocalizedStringFromTable(@"picker.selection.multiple-photos", @"GMImagePicker", @"%@ Photos Selected"), @(nImages)];
+        return [NSString stringWithFormat:GMImagePickerLocalizedString(@"picker.selection.multiple-photos", @"%@ Photos Selected"), @(nImages)];
     }
     else if (nImages==1)
     {
-        return NSLocalizedStringFromTable(@"picker.selection.single-photo", @"GMImagePicker", @"1 Photo Selected" );
+        return GMImagePickerLocalizedString(@"picker.selection.single-photo", @"1 Photo Selected" );
     }
     else if (nVideos>1)
     {
-        return [NSString stringWithFormat:NSLocalizedStringFromTable(@"picker.selection.multiple-videos", @"GMImagePicker", @"%@ Videos Selected"), @(nVideos)];
+        return [NSString stringWithFormat:GMImagePickerLocalizedString(@"picker.selection.multiple-videos", @"%@ Videos Selected"), @(nVideos)];
     }
     else if (nVideos==1)
     {
-        return NSLocalizedStringFromTable(@"picker.selection.single-video", @"GMImagePicker", @"1 Video Selected");
+        return GMImagePickerLocalizedString(@"picker.selection.single-video", @"1 Video Selected");
     }
     else
     {

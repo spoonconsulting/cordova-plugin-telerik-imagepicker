@@ -57,6 +57,9 @@
         <header-file src="src/ios/GMImagePicker/GMImagePickerController.h" />
         <source-file src="src/ios/GMImagePicker/GMImagePickerController.m" />
 
+        <header-file src="src/ios/GMImagePicker/GMImagePickerLocalization.h" />
+        <source-file src="src/ios/GMImagePicker/GMImagePickerLocalization.m" />
+
         <header-file src="src/ios/GMImagePicker/PSYBlockTimer.h" />
         <source-file src="src/ios/GMImagePicker/PSYBlockTimer.m" />
 
@@ -81,6 +84,9 @@
         <resource-file src="src/ios/GMImagePicker/pt.lproj" />
         <resource-file src="src/ios/GMImagePicker/pl.lproj" />
         <resource-file src="src/ios/GMImagePicker/zh-Hans.lproj" />
+        <resource-file src="src/ios/SOSPicker/Base.lproj" />
+        <resource-file src="src/ios/SOSPicker/en.lproj" />
+        <resource-file src="src/ios/SOSPicker/fr.lproj" />
 
         <framework src="Accelerate.framework" />
         <framework src="Security.framework" />
@@ -107,5 +113,8 @@
         <framework src="com.android.support:appcompat-v7:27.1.1" />
 
         <source-file src="src/android/ImagePicker.java" target-dir="src/com/spoon/imagepicker" />
+        <resource-file src="src/android/res/values/strings.xml" target="res/values/strings.xml" />
+        <resource-file src="src/android/res/values-en-rUS/strings.xml" target="res/values-en-rUS/strings.xml" />
+        <resource-file src="src/android/res/values-fr-rFR/strings.xml" target="res/values-fr-rFR/strings.xml" />
     </platform>
 </plugin>

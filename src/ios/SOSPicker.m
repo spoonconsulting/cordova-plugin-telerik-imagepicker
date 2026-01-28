@@ -11,6 +11,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import "GMImagePickerController.h"
 #import "GMFetchItem.h"
+#import "GMImagePickerLocalization.h"
 
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
 
@@ -54,6 +55,12 @@ typedef enum : NSUInteger {
 - (void) getPictures:(CDVInvokedUrlCommand *)command {
 
     NSDictionary *options = [command.arguments objectAtIndex: 0];
+
+    NSString *language = [options objectForKey:@"language"];
+    if (language == (id)[NSNull null] || language.length == 0) {
+        language = nil;
+    }
+    [GMImagePickerLocalization setPreferredLanguage:language];
 
     self.outputType = [[options objectForKey:@"outputType"] integerValue];
     BOOL allow_video = [[options objectForKey:@"allow_video" ] boolValue ];
@@ -102,11 +109,11 @@ typedef enum : NSUInteger {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSString *toastMsg;
         if (allow_video) {
-            toastMsg = [NSString stringWithFormat:@"Image size limit is %ldMB\nVideo size limit is %ldMB",
+            toastMsg = [NSString stringWithFormat:SOSPickerLocalizedString(@"imagepicker.toast.max-size-image-video", @"Image size limit is %ldMB\nVideo size limit is %ldMB"),
                         (long)self.maxPhotoSize,
                         (long)self.maxVideoSize];
         } else {
-            toastMsg = [NSString stringWithFormat:@"Image size limit is %ldMB",
+            toastMsg = [NSString stringWithFormat:SOSPickerLocalizedString(@"imagepicker.toast.max-size-image", @"Image size limit is %ldMB"),
                         (long)self.maxPhotoSize];
         }
         [self showToastMessage:toastMsg onViewController:picker];
@@ -341,13 +348,13 @@ typedef enum : NSUInteger {
 
     // if videoSizeLimitExceeded is YES, display toast message
     if (self.mediaSizeLimitExceeded == YES && self.videoExportFailed == YES) {
-        NSString *toastMsg = [NSString stringWithFormat:@"Media(s) above max limit not selected and some videos failed to be exported"];
+        NSString *toastMsg = SOSPickerLocalizedString(@"imagepicker.toast.media-limit-exceeded-and-export-failed", @"Media(s) above max limit not selected and some videos failed to be exported");
         [self showToastMessage:toastMsg];
     } else if (self.mediaSizeLimitExceeded == YES) {
-        NSString *toastMsg = [NSString stringWithFormat:@"Media(s) above max limit not selected"];
+        NSString *toastMsg = SOSPickerLocalizedString(@"imagepicker.toast.media-limit-exceeded", @"Media(s) above max limit not selected");
         [self showToastMessage:toastMsg];
     } else if (self.videoExportFailed == YES) {
-        NSString *toastMsg = [NSString stringWithFormat:@"Some videos failed to be exported"];
+        NSString *toastMsg = SOSPickerLocalizedString(@"imagepicker.toast.video-export-failed", @"Some videos failed to be exported");
         [self showToastMessage:toastMsg];
     }
 
