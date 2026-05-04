@@ -1,3 +1,5 @@
+## [2.3.1](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.3.0...2.3.1) (2026-05-04)
+
 ## [2.3.0](https://github.com/spoonconsulting/cordova-plugin-telerik-imagepicker/compare/2.2.0...2.3.0) (2026-01-09)
 
 * **Android:** You can now choose videos from your gallery, in addition to images. You can also set a maximum size limit for both images and videos (default: 5 MB for videos, 15 MB for images).
