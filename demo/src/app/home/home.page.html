@@ -1,0 +1,32 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Demo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Demo</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="container">
+    <input type="button" value="Open gallery" (click)="openGallery()" />
+    <ion-grid>
+      <ion-row>
+        <ion-col *ngFor="let url of images" size="4">
+          <div class="img-container">
+            <div class="close-btn">
+              <ion-icon
+                name="trash-outline"
+                (click)="removeImage(url)"
+              ></ion-icon>
+            </div>
+            <img [src]="url | safe" height="150" />
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>

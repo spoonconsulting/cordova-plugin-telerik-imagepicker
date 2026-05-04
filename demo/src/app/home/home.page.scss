@@ -1,0 +1,23 @@
+.container {
+  padding: 8px;
+}
+
+.img-container {
+  display: block;
+  text-align: center;
+  border-width: 1px;
+  border-style: dashed;
+
+  img {
+    object-fit: contain;
+  }
+}
+
+.close-btn {
+  text-align: right;
+  padding-right: 2px;
+}
+
+ion-icon {
+  color: red;
+}
